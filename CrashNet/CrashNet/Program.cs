@@ -10,7 +10,7 @@ namespace CrashNet
         /// </summary>
         static void Main(string[] args)
         {
-            using (Game game = new Game())
+            using (Game game = new Game(800, 600, false))
             {
                 game.Run();
             }

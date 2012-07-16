@@ -7,12 +7,12 @@ namespace CrashNet
 {
     class Level
     {
-        internal void Draw()
+        internal void Update()
         {
             throw new NotImplementedException();
         }
 
-        internal void Update()
+        internal void Draw(Microsoft.Xna.Framework.Graphics.SpriteBatch spriteBatch)
         {
             throw new NotImplementedException();
         }

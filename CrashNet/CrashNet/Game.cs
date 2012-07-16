@@ -19,6 +19,9 @@ namespace CrashNet
         GraphicsDeviceManager graphics;
         SpriteBatch spriteBatch;
 
+        private int width;
+        private int height;
+
         GameState state;
         Level curLevel;
         
@@ -30,10 +33,14 @@ namespace CrashNet
 
         Background background;
 
-        public Game()
+        public Game(int Width, int Height, bool IsFullScreen=false)
         {
             graphics = new GraphicsDeviceManager(this);
+            graphics.IsFullScreen = IsFullScreen;
             Content.RootDirectory = "Content";
+
+            this.Width = Width;
+            this.Height = Height;
         }
 
         /// <summary>
@@ -44,8 +51,9 @@ namespace CrashNet
         /// </summary>
         protected override void Initialize()
         {
-            // TODO: Add your initialization logic here
-
+            state = GameState.MainMenu;
+            background = new Background();
+            mainMenu = new MainMenu();
             base.Initialize();
         }
 
@@ -104,6 +112,7 @@ namespace CrashNet
                     background.Update();
                     mainMenu.Update();
                     break;
+            }
 
             base.Update(gameTime);
         }
@@ -114,36 +123,60 @@ namespace CrashNet
         /// <param name="gameTime">Provides a snapshot of timing values.</param>
         protected override void Draw(GameTime gameTime)
         {
-            GraphicsDevice.Clear(Color.CornflowerBlue);
+            
 
             // Render components based on the mode the game is in.
             switch (state)
             {
                 case GameState.Level:
                 case GameState.Boss:
-                    background.Draw();
-                    curLevel.Draw();
-                    ui.Draw();
+                    background.Draw(spriteBatch);
+                    curLevel.Draw(spriteBatch);
+                    ui.Draw(spriteBatch);
                     break;
 
                 case GameState.Cutscene:
-                    curCutscene.Draw();
+                    curCutscene.Draw(spriteBatch);
                     break;
 
                 case GameState.GameMenu:
-                    background.Draw();
-                    curLevel.Draw();
-                    ui.Draw();
-                    gameMenu.Draw();
+                    background.Draw(spriteBatch);
+                    curLevel.Draw(spriteBatch);
+                    ui.Draw(spriteBatch);
+                    gameMenu.Draw(spriteBatch);
                     break;
 
                 case GameState.MainMenu:
-                    background.Draw();
-                    mainMenu.Draw();
+                    background.Draw(spriteBatch);
+                    mainMenu.Draw(spriteBatch);
                     break;
             }
 
             base.Draw(gameTime);
+        }
+
+        public int Width {
+            get
+            {
+                return width;
+            }
+            set
+            {
+                width = value;
+                graphics.PreferredBackBufferWidth = width;
+            }
+        }
+
+        public int Height {
+            get
+            {
+                return height;
+            }
+            set
+            {
+                height = value;
+                graphics.PreferredBackBufferHeight = height;
+            }
         }
     }
 }
