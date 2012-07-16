@@ -52,7 +52,7 @@ namespace CrashNet
         protected override void Initialize()
         {
             state = GameState.MainMenu;
-            background = new Background();
+            background = new Background(Width, Height, TextureManager.GetTexture(TextureNames.BACKGROUND));
             mainMenu = new MainMenu();
             base.Initialize();
         }
@@ -163,6 +163,7 @@ namespace CrashNet
             set
             {
                 width = value;
+                background.Width = value;
                 graphics.PreferredBackBufferWidth = width;
             }
         }
@@ -175,6 +176,7 @@ namespace CrashNet
             set
             {
                 height = value;
+                background.Height = value;
                 graphics.PreferredBackBufferHeight = height;
             }
         }
