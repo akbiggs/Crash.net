@@ -1,0 +1,9 @@
+Alex:
+
+--Basic Game.cs class
+--Texture/Font Managers
+--GameObject
+
+Francisco:
+
+--Add your chosen tasks here
