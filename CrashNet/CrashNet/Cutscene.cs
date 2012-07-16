@@ -5,7 +5,7 @@ using System.Text;
 
 namespace CrashNet
 {
-    class Level
+    class Cutscene
     {
         internal void Draw()
         {

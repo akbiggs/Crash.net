@@ -5,7 +5,16 @@ using System.Text;
 
 namespace CrashNet
 {
-    class MainMenu
+    class MainMenu : Menu
     {
+        internal void Draw()
+        {
+            throw new NotImplementedException();
+        }
+
+        internal void Update()
+        {
+            throw new NotImplementedException();
+        }
     }
 }

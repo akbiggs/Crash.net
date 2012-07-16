@@ -21,9 +21,14 @@ namespace CrashNet
 
         GameState state;
         Level curLevel;
+        
+        Cutscene curCutscene;
+
         MainMenu mainMenu;
+        GameMenu gameMenu;
         UserInterface ui;
 
+        Background background;
 
         public Game()
         {
@@ -76,7 +81,29 @@ namespace CrashNet
             if (GamePad.GetState(PlayerIndex.One).Buttons.Back == ButtonState.Pressed)
                 this.Exit();
 
-            // TODO: Add your update logic here
+            // Update components based on the mode the game is in.
+            switch (state)
+            {
+                case GameState.Level:
+                case GameState.Boss:
+                    background.Update();
+                    curLevel.Update();
+                    ui.Update();
+                    break;
+
+                case GameState.Cutscene:
+                    curCutscene.Update();
+                    break;
+
+                case GameState.GameMenu:
+                    background.Update();
+                    gameMenu.Update();
+                    break;
+
+                case GameState.MainMenu:
+                    background.Update();
+                    mainMenu.Update();
+                    break;
 
             base.Update(gameTime);
         }
@@ -89,7 +116,32 @@ namespace CrashNet
         {
             GraphicsDevice.Clear(Color.CornflowerBlue);
 
-            // TODO: Add your drawing code here
+            // Render components based on the mode the game is in.
+            switch (state)
+            {
+                case GameState.Level:
+                case GameState.Boss:
+                    background.Draw();
+                    curLevel.Draw();
+                    ui.Draw();
+                    break;
+
+                case GameState.Cutscene:
+                    curCutscene.Draw();
+                    break;
+
+                case GameState.GameMenu:
+                    background.Draw();
+                    curLevel.Draw();
+                    ui.Draw();
+                    gameMenu.Draw();
+                    break;
+
+                case GameState.MainMenu:
+                    background.Draw();
+                    mainMenu.Draw();
+                    break;
+            }
 
             base.Draw(gameTime);
         }

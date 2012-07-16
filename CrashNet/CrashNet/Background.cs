@@ -5,7 +5,7 @@ using System.Text;
 
 namespace CrashNet
 {
-    class Level
+    class Background
     {
         internal void Draw()
         {
