@@ -2,7 +2,6 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
-using Microsoft.Xna.Framework.Graphics;
 
 namespace CrashNet
 {
@@ -10,12 +9,12 @@ namespace CrashNet
     {
         Texture2D texture;
 
-        internal void Draw(SpriteBatch spr)
+        internal void Update()
         {
-
+            throw new NotImplementedException();
         }
 
-        internal void Update()
+        internal void Draw(Microsoft.Xna.Framework.Graphics.SpriteBatch spriteBatch)
         {
             throw new NotImplementedException();
         }
