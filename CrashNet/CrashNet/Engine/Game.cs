@@ -23,7 +23,7 @@ namespace CrashNet
         private int height;
 
         GameState state;
-        Level curLevel;
+        World curLevel;
         
         Cutscene curCutscene;
 
@@ -52,8 +52,7 @@ namespace CrashNet
         protected override void Initialize()
         {
             state = GameState.MainMenu;
-            background = new Background(Width, Height, TextureManager.GetTexture(TextureNames.BACKGROUND));
-            mainMenu = new MainMenu();
+
             base.Initialize();
         }
 
@@ -66,7 +65,12 @@ namespace CrashNet
             // Create a new SpriteBatch, which can be used to draw textures.
             spriteBatch = new SpriteBatch(GraphicsDevice);
 
-            // TODO: use this.Content to load your game content here
+            TextureManager.LoadContents(Content);
+            FontManager.LoadContents(Content);
+
+            //initializing here because they are dependent on content managers
+            background = new Background(Width, Height, TextureManager.GetTexture(TextureNames.BACKGROUND));
+            mainMenu = new MainMenu();
         }
 
         /// <summary>
@@ -123,8 +127,7 @@ namespace CrashNet
         /// <param name="gameTime">Provides a snapshot of timing values.</param>
         protected override void Draw(GameTime gameTime)
         {
-            
-
+            spriteBatch.Begin();
             // Render components based on the mode the game is in.
             switch (state)
             {
@@ -153,6 +156,8 @@ namespace CrashNet
             }
 
             base.Draw(gameTime);
+
+            spriteBatch.End();
         }
 
         public int Width {
@@ -163,7 +168,7 @@ namespace CrashNet
             set
             {
                 width = value;
-                background.Width = value;
+                if (background != null) background.Width = value;
                 graphics.PreferredBackBufferWidth = width;
             }
         }
@@ -176,7 +181,7 @@ namespace CrashNet
             set
             {
                 height = value;
-                background.Height = value;
+                if (background != null) background.Height = value;
                 graphics.PreferredBackBufferHeight = height;
             }
         }

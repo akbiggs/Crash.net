@@ -7,52 +7,73 @@ using Microsoft.Xna.Framework;
 
 namespace CrashNet
 {
-    class Background
+    class Background : Renderable
     {
         public int Width;
         public int Height;
 
-        Texture2D texture;
         bool isTiled;
-        bool shouldReRender;
+        Texture2D texture;
 
-        public Background(int Width, int Height, Texture2D bgTexture, bool IsTiled=false)
+        bool shouldRender;
+        Texture2D unrendered;
+
+        public Background(int Width, int Height, Texture2D bgTexture, bool isTiled=false)
         {
             this.Width = Width;
             this.Height = Height;
-            
-            isTiled = IsTiled;
+
+            this.isTiled = isTiled;
+            Texture = bgTexture;
         }
 
         internal void Update()
         {
-            throw new NotImplementedException();
         }
-
-        /**
-         * Renders the background based on the given texture.
-         * For example, if the background is to be tiled based on the given texture,
-         * returns a tiled texture the width and height of the whole background.
-         */
-        /*internal void Render(GraphicsDevice graphicsDevice)
-        {
-            
-            if (!isTiled) {
-                //lay out the given texture as tiles
-                Color[,] paint = new Color[texture.Width, texture.Height];
-                Color[] canvas = new Color[this.Width * this.Height];
-                for (int x = 0; x < this.Width; x++)
-                    for (int y = 0; y < this.Height; y++)
-                        canvas[x + y * this.Width] = paint[x % texture.Width, y % texture.Height];
-
-                Texture2D result = new Texture2D(graphicsDevice, this.Width, this.Height);
-                result.SetData(canvas);
-            }
-        }*/
 
         internal void Draw(SpriteBatch spriteBatch)
         {
-            
+            if (shouldRender)
+            {
+                Render(spriteBatch.GraphicsDevice);
+                shouldRender = false;
+            }
+
+            spriteBatch.Draw(texture, new Vector2(0, 0), Color.White);
+        }
+
+        public void Render(GraphicsDevice graphicsDevice)
+        {
+            Render(graphicsDevice, new Rectangle(0, 0, Width, Height));
+        }
+        public void Render(GraphicsDevice graphicsDevice, Rectangle region)
+        {
+            if (!isTiled) texture = unrendered;
+            else {
+                //lay out the given texture as tiles
+                Color[,] paint = new Color[texture.Width, texture.Height];
+                Color[] canvas = new Color[region.Width * region.Height];
+                for (int x = 0; x < region.Width; x++)
+                    for (int y = 0; y < region.Height; y++)
+                        canvas[x + y * region.Width] = paint[(x + region.X) % unrendered.Width,
+                            (y + region.Y) % unrendered.Height];
+
+                texture = new Texture2D(graphicsDevice, this.Width, this.Height);
+                texture.SetData(0, region, canvas, 0, region.Width * region.Height);
+            }
+        }
+
+        public Texture2D Texture
+        {
+            get
+            {
+                return texture;
+            }
+            set
+            {
+                unrendered = value;
+                shouldRender = true;
+            }
         }
     }
 }

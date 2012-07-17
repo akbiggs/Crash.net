@@ -27,12 +27,16 @@ namespace CrashNet
             // Levels
             TextureNames.GROUND,
             TextureNames.WALL,
+            TextureNames.BACKGROUND,
 
             // Misc.
             TextureNames.BLANK
         };
-                                               
 
+        /// <summary>
+        /// Loads all the textures that the game will use.
+        /// </summary>
+        /// <param name="content">Content manager for the game.</param>
         public static void LoadContents(ContentManager content)
         {
             foreach (string name in textureNames)
@@ -43,16 +47,32 @@ namespace CrashNet
             }
         }
 
+        /// <summary>
+        /// Gets the texture by name.
+        /// </summary>
+        /// <param name="name">The filename of the texture to get.</param>
+        /// <returns>The texture associated with the name.</returns>
         public static Texture2D GetTexture(string name)
         {
             return texDic[name];
         }
 
+        /// <summary>
+        /// Gets the colors of the texture by name.
+        /// </summary>
+        /// <param name="name">The filename of the texture the colors
+        /// are taken from.</param>
+        /// <returns>The colors of the texture.</returns>
         public static Color[,] GetColors(string name)
         {
             return colDic[name];
         }
 
+        /// <summary>
+        /// Converts the given texture to a 2D array of colors.
+        /// </summary>
+        /// <param name="texture">The texture to be converted.</param>
+        /// <returns>The colors of the texture.</returns>
         private static Color[,] TextureToColor2D(Texture2D texture)
         {
             Color[] colors1D = new Color[texture.Width * texture.Height];
