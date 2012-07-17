@@ -41,10 +41,9 @@ namespace CrashNet
 
         internal void Draw(SpriteBatch spriteBatch)
         {
-            if (shouldRender)
+            if (ShouldRender())
             {
                 Render(spriteBatch.GraphicsDevice);
-                shouldRender = false;
             }
 
             spriteBatch.Draw(texture, new Vector2(0, 0), Color.White);
@@ -91,7 +90,7 @@ namespace CrashNet
         /// </summary>
         /// <returns>True if the background needs to be re-rendered,
         /// false otherwise.</returns>
-        private bool ShouldRender()
+        public bool ShouldRender()
         {
             return unrendered != null;
         }
