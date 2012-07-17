@@ -15,5 +15,6 @@ namespace CrashNet
         Texture2D Texture { get; set; }
 
         void Render(GraphicsDevice graphicsDevice);
+        bool ShouldRender();
     }
 }

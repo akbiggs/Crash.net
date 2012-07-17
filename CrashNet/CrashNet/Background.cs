@@ -15,16 +15,24 @@ namespace CrashNet
         bool isTiled;
         Texture2D texture;
 
-        bool shouldRender;
-        Texture2D unrendered;
+        Texture2D unrendered = null;
 
-        public Background(int Width, int Height, Texture2D bgTexture, bool isTiled=false)
+        /// <summary>
+        /// Makes a new background of the given width, height, and showing
+        /// the given texture.
+        /// </summary>
+        /// <param name="Width">The width of the background.</param>
+        /// <param name="Height">The height of the background.</param>
+        /// <param name="texture">The texture of the background.</param>
+        /// <param name="isTiled">Whether or not the texture of the background
+        /// should be tiled.</param>
+        public Background(int Width, int Height, Texture2D texture, bool isTiled=false)
         {
             this.Width = Width;
             this.Height = Height;
 
             this.isTiled = isTiled;
-            Texture = bgTexture;
+            Texture = texture;
         }
 
         internal void Update()
@@ -42,10 +50,22 @@ namespace CrashNet
             spriteBatch.Draw(texture, new Vector2(0, 0), Color.White);
         }
 
+        /// <summary>
+        /// Re-renders the background.
+        /// For example, if the texture changes, tiles the background based on the
+        /// new texture.
+        /// </summary>
+        /// <param name="graphicsDevice">The graphics device of the game.</param>
         public void Render(GraphicsDevice graphicsDevice)
         {
             Render(graphicsDevice, new Rectangle(0, 0, Width, Height));
         }
+
+        /// <summary>
+        /// Re-renders a region of the background.
+        /// </summary>
+        /// <param name="graphicsDevice">The graphics device of the game.</param>
+        /// <param name="region">The area of the background to render.</param>
         public void Render(GraphicsDevice graphicsDevice, Rectangle region)
         {
             if (!isTiled) texture = unrendered;
@@ -58,11 +78,27 @@ namespace CrashNet
                         canvas[x + y * region.Width] = paint[(x + region.X) % unrendered.Width,
                             (y + region.Y) % unrendered.Height];
 
+                //store the newly generated background texture
                 texture = new Texture2D(graphicsDevice, this.Width, this.Height);
                 texture.SetData(0, region, canvas, 0, region.Width * region.Height);
             }
+
+            unrendered = null;
         }
 
+        /// <summary>
+        /// Whether or not the background needs to be re-rendered.
+        /// </summary>
+        /// <returns>True if the background needs to be re-rendered,
+        /// false otherwise.</returns>
+        private bool ShouldRender()
+        {
+            return unrendered != null;
+        }
+
+        /// <summary>
+        /// The texture of the background.
+        /// </summary>
         public Texture2D Texture
         {
             get
@@ -72,7 +108,6 @@ namespace CrashNet
             set
             {
                 unrendered = value;
-                shouldRender = true;
             }
         }
     }
