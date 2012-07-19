@@ -8,7 +8,9 @@ using Microsoft.Xna.Framework;
 namespace CrashNet
 {
     /// <summary>
-    /// Used for anything whose texture does not need to be redrawn every frame. 
+    /// Used for anything whose texture needs to be rendered before it can be
+    /// displayed, but which does not need to be re-rendered on every single
+    /// frame.
     /// </summary>
     public interface Renderable
     {

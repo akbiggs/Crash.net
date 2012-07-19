@@ -2,19 +2,23 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
+using CrashNet.Worlds;
 
 namespace CrashNet
 {
     class World
     {
+        Room[,] rooms;
+        Room curRoom;
+
         internal void Update()
         {
-            throw new NotImplementedException();
+            curRoom.Update();
         }
 
         internal void Draw(Microsoft.Xna.Framework.Graphics.SpriteBatch spriteBatch)
         {
-            throw new NotImplementedException();
+            curRoom.Draw();
         }
     }
 }

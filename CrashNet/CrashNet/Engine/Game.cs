@@ -23,8 +23,8 @@ namespace CrashNet
         private int height;
 
         GameState state;
+
         World curLevel;
-        
         Cutscene curCutscene;
 
         MainMenu mainMenu;
@@ -168,7 +168,7 @@ namespace CrashNet
             set
             {
                 width = value;
-                if (background != null) background.Width = value;
+                if (background != null) background.Width = width;
                 graphics.PreferredBackBufferWidth = width;
             }
         }
@@ -181,7 +181,7 @@ namespace CrashNet
             set
             {
                 height = value;
-                if (background != null) background.Height = value;
+                if (background != null) background.Height = height;
                 graphics.PreferredBackBufferHeight = height;
             }
         }

@@ -77,6 +77,10 @@
     <Compile Include="Engine\FontManager.cs" />
     <Compile Include="Interface\GameMenu.cs" />
     <Compile Include="Engine\GameState.cs" />
+    <Compile Include="Interface\Map.cs" />
+    <Compile Include="Worlds\GameObject.cs" />
+    <Compile Include="Worlds\Room.cs" />
+    <Compile Include="Worlds\Tile.cs" />
     <Compile Include="Worlds\World.cs" />
     <Compile Include="Interface\MainMenu.cs" />
     <Compile Include="Interface\Menu.cs" />
