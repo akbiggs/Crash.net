@@ -1,8 +1,8 @@
 Alex:
 
---Basic Game.cs class
---Texture/Font Managers
 --GameObject
+--Room
+--Tile
 
 Francisco:
 
