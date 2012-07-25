@@ -8,6 +8,7 @@ using Microsoft.Xna.Framework.GamerServices;
 using Microsoft.Xna.Framework.Graphics;
 using Microsoft.Xna.Framework.Input;
 using Microsoft.Xna.Framework.Media;
+using CrashNet.Worlds;
 
 namespace CrashNet
 {
@@ -24,7 +25,7 @@ namespace CrashNet
 
         GameState state;
 
-        World curLevel;
+        World world;
         Cutscene curCutscene;
 
         MainMenu mainMenu;
@@ -51,7 +52,7 @@ namespace CrashNet
         /// </summary>
         protected override void Initialize()
         {
-            state = GameState.MainMenu;
+            state = GameState.Level;
 
             base.Initialize();
         }
@@ -70,6 +71,13 @@ namespace CrashNet
 
             //initializing here because they are dependent on content managers
             background = new Background(Width, Height, TextureManager.GetTexture(TextureNames.BACKGROUND));
+
+            world = new World(WorldNumber.World1);
+            world.Add(new GameObject(new Vector2(100, 100), Vector2.Zero,
+                TextureManager.GetTexture(TextureNames.PLAYER_ONE_IDLE)));
+
+            ui = new UserInterface();
+
             mainMenu = new MainMenu();
         }
 
@@ -99,7 +107,7 @@ namespace CrashNet
                 case GameState.Level:
                 case GameState.Boss:
                     background.Update();
-                    curLevel.Update();
+                    world.Update();
                     ui.Update();
                     break;
 
@@ -134,7 +142,7 @@ namespace CrashNet
                 case GameState.Level:
                 case GameState.Boss:
                     background.Draw(spriteBatch);
-                    curLevel.Draw(spriteBatch);
+                    world.Draw(spriteBatch);
                     ui.Draw(spriteBatch);
                     break;
 
@@ -144,7 +152,7 @@ namespace CrashNet
 
                 case GameState.GameMenu:
                     background.Draw(spriteBatch);
-                    curLevel.Draw(spriteBatch);
+                    world.Draw(spriteBatch);
                     ui.Draw(spriteBatch);
                     gameMenu.Draw(spriteBatch);
                     break;

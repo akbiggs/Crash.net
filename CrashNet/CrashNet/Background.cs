@@ -18,7 +18,7 @@ namespace CrashNet
         Texture2D unrendered = null;
 
         /// <summary>
-        /// Makes a new background of the given width, height, and showing
+        /// Make a new background of the given width, height, and showing
         /// the given texture.
         /// </summary>
         /// <param name="Width">The width of the background.</param>
@@ -50,7 +50,7 @@ namespace CrashNet
         }
 
         /// <summary>
-        /// Re-renders the background.
+        /// Re-render the background.
         /// For example, if the texture changes, tiles the background based on the
         /// new texture.
         /// </summary>
@@ -61,7 +61,7 @@ namespace CrashNet
         }
 
         /// <summary>
-        /// Re-renders a region of the background.
+        /// Re-render a region of the background.
         /// </summary>
         /// <param name="graphicsDevice">The graphics device of the game.</param>
         /// <param name="region">The area of the background to render.</param>

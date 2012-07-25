@@ -73,12 +73,13 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Background.cs" />
+    <Compile Include="Engine\BBox.cs" />
     <Compile Include="Engine\Cutscene.cs" />
     <Compile Include="Engine\FontManager.cs" />
     <Compile Include="Interface\GameMenu.cs" />
     <Compile Include="Engine\GameState.cs" />
     <Compile Include="Interface\Map.cs" />
-    <Compile Include="Worlds\GameObject.cs" />
+    <Compile Include="Game Objects\GameObject.cs" />
     <Compile Include="Worlds\Room.cs" />
     <Compile Include="Worlds\Tile.cs" />
     <Compile Include="Worlds\World.cs" />
@@ -130,9 +131,7 @@
       <Install>true</Install>
     </BootstrapperPackage>
   </ItemGroup>
-  <ItemGroup>
-    <Folder Include="Game Objects\" />
-  </ItemGroup>
+  <ItemGroup />
   <Import Project="$(MSBuildBinPath)\Microsoft.CSharp.targets" />
   <Import Project="$(MSBuildExtensionsPath)\Microsoft\XNA Game Studio\Microsoft.Xna.GameStudio.targets" />
   <!--

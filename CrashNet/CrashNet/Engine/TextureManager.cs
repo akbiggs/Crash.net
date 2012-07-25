@@ -85,6 +85,23 @@ namespace CrashNet
 
             return colors2D;
         }
+
+        internal static Texture2D GetTexture(Worlds.Tiletype type)
+        {
+            string name;
+            switch (type)
+            {
+                case Worlds.Tiletype.Ground:
+                default:
+                    name = TextureNames.GROUND;
+                    break;
+                case Worlds.Tiletype.Wall:
+                    name = TextureNames.WALL;
+                    break;
+            }
+
+            return GetTexture(name);
+        }
     }
 
     //stores constants for texture names
