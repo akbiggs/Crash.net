@@ -1,8 +1,10 @@
 Alex:
 
---GameObject
---Room
---Tile
+1. Add acceleration, max velocity and decelleration to player/game objects in general.
+2. Generalize player movement to method taking a direction as an argument.
+3. Add basic collision detection for walls.
+4. Add switching from room to room.
+5. Randomly generate rooms
 
 Francisco:
 
