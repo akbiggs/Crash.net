@@ -6,7 +6,7 @@ using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 using CrashNet.Engine;
 
-namespace CrashNet.Worlds
+namespace CrashNet.GameObjects
 {
     class GameObject
     {
@@ -16,6 +16,13 @@ namespace CrashNet.Worlds
         /// The velocity of the object.
         /// </summary>
         Vector2 velocity;
+
+        // TODO: Acceleration and max velocity. Decellerate when no keys
+        // are pressed.
+        Vector2 maxVelocity;
+
+        Vector2 acceleration;
+         
 
         /// <summary>
         /// How much the object is rotated, in radians.
@@ -52,14 +59,41 @@ namespace CrashNet.Worlds
         }
 
         /// <summary>
+        /// Moves the object in the given direction.
+        /// </summary>
+        /// <param name="direction"></param>
+        internal virtual void Move(Direction direction)
+        {
+            switch (direction)
+            {
+                // TODO: throw rads to degrees stuff into a helper method
+                // Also, fix bug where moving player in two directions makes them
+                // face only one.
+                case Direction.North:
+                    rotation = 0;
+                    velocity.Y = -10;
+                    break;
+                case Direction.South:
+                    rotation = (float)Math.PI;
+                    velocity.Y = 10;
+                    break;
+                case Direction.West:
+                    rotation = (float)(Math.PI / 2);
+                    velocity.X = -10;
+                    break;
+                case Direction.East:
+                    rotation = (float)((3 / 2) * Math.PI);
+                    velocity.X = 10;
+                    break;
+            }
+        }
+
+        /// <summary>
         /// The current position of the object.
         /// </summary>
         public Vector2 Position
         {
-            get
-            {
-                return position;
-            }
+            get { return position; }
             set
             {
                 position = value;
@@ -72,10 +106,7 @@ namespace CrashNet.Worlds
         /// </summary>
         public Texture2D Texture
         {
-            get
-            {
-                return texture;
-            }
+            get { return texture; }
             set
             {
                 texture = value;

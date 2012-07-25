@@ -48,17 +48,17 @@ namespace CrashNet
         }
 
         /// <summary>
-        /// Gets the texture by name.
+        /// Gets a texture.
         /// </summary>
         /// <param name="name">The filename of the texture to get.</param>
-        /// <returns>The texture associated with the name.</returns>
+        /// <returns>The requested texture.</returns>
         public static Texture2D GetTexture(string name)
         {
             return texDic[name];
         }
 
         /// <summary>
-        /// Gets the colors of the texture by name.
+        /// Gets the colors of the texture.
         /// </summary>
         /// <param name="name">The filename of the texture the colors
         /// are taken from.</param>
@@ -86,10 +86,15 @@ namespace CrashNet
             return colors2D;
         }
 
-        internal static Texture2D GetTexture(Worlds.Tiletype type)
+        /// <summary>
+        /// Gets a texture.
+        /// </summary>
+        /// <param name="tiletype">The type of tile to get the texture of.</param>
+        /// <returns>The requested texture.</returns>
+        internal static Texture2D GetTexture(Worlds.Tiletype tiletype)
         {
             string name;
-            switch (type)
+            switch (tiletype)
             {
                 case Worlds.Tiletype.Ground:
                 default:

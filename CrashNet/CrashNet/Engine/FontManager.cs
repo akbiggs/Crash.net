@@ -28,6 +28,11 @@ namespace CrashNet
             }
         }
 
+        /// <summary>
+        /// Gets a font.
+        /// </summary>
+        /// <param name="name">The name of the font.</param>
+        /// <returns>The specified font.</returns>
         public static SpriteFont GetFont(String name)
         {
             return fontDic[name];

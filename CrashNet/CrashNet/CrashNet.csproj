@@ -72,14 +72,16 @@
     <Reference Include="System.Net" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="Background.cs" />
+    <Compile Include="Engine\Background.cs" />
     <Compile Include="Engine\BBox.cs" />
     <Compile Include="Engine\Cutscene.cs" />
     <Compile Include="Engine\FontManager.cs" />
+    <Compile Include="GameObjects\Direction.cs" />
+    <Compile Include="GameObjects\Player.cs" />
     <Compile Include="Interface\GameMenu.cs" />
     <Compile Include="Engine\GameState.cs" />
     <Compile Include="Interface\Map.cs" />
-    <Compile Include="Game Objects\GameObject.cs" />
+    <Compile Include="GameObjects\GameObject.cs" />
     <Compile Include="Worlds\Room.cs" />
     <Compile Include="Worlds\Tile.cs" />
     <Compile Include="Worlds\World.cs" />

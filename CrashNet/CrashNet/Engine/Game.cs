@@ -9,6 +9,7 @@ using Microsoft.Xna.Framework.Graphics;
 using Microsoft.Xna.Framework.Input;
 using Microsoft.Xna.Framework.Media;
 using CrashNet.Worlds;
+using CrashNet.GameObjects;
 
 namespace CrashNet
 {
@@ -73,8 +74,7 @@ namespace CrashNet
             background = new Background(Width, Height, TextureManager.GetTexture(TextureNames.BACKGROUND));
 
             world = new World(WorldNumber.World1);
-            world.Add(new GameObject(new Vector2(100, 100), Vector2.Zero,
-                TextureManager.GetTexture(TextureNames.PLAYER_ONE_IDLE)));
+            world.Add(new Player(PlayerNumber.One, new Vector2(100, 100)));
 
             ui = new UserInterface();
 
@@ -169,10 +169,7 @@ namespace CrashNet
         }
 
         public int Width {
-            get
-            {
-                return width;
-            }
+            get { return width; }
             set
             {
                 width = value;
@@ -182,10 +179,7 @@ namespace CrashNet
         }
 
         public int Height {
-            get
-            {
-                return height;
-            }
+            get { return height; }
             set
             {
                 height = value;
