@@ -187,10 +187,9 @@ namespace CrashNet.GameObjects
             // distance. Do so by adjusting values based on the newAngle and
             // rotation so that one of them is the top of the circle, then determine
             // distance from there.
-            float adjust = Math.Min(newAngle, rotation);
-            float choice1 = (newAngle + adjust) - (rotation + adjust);
-            float choice2 = (newAngle + adjust) + (rotation + adjust);
-            if (choice1 % TWO_PI < choice2 % TWO_PI)
+            float choice1 = (newAngle - rotation) - (float)TWO_PI;
+            float choice2 = (newAngle - rotation);
+            if (Math.Abs(choice1 % TWO_PI) < Math.Abs(choice2 % TWO_PI))
                 rotationChange = (float)(choice1 % TWO_PI);
             else rotationChange = (float)(choice2 % TWO_PI);
         }
