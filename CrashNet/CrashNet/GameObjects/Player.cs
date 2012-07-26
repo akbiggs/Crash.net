@@ -30,13 +30,21 @@ namespace CrashNet.GameObjects
 
         internal override void Update()
         {
-            if (Input.IsKeyDown(Keys.Left))
+            if (Input.IsKeyDown(Keys.Up) && Input.IsKeyDown(Keys.Left))
+                Move(Direction.NorthWest);
+            else if (Input.IsKeyDown(Keys.Up) && Input.IsKeyDown(Keys.Right))
+                Move(Direction.NorthEast);
+            else if (Input.IsKeyDown(Keys.Down) && Input.IsKeyDown(Keys.Left))
+                Move(Direction.SouthWest);
+            else if (Input.IsKeyDown(Keys.Down) && Input.IsKeyDown(Keys.Right))
+                Move(Direction.SouthEast);
+            else if (Input.IsKeyDown(Keys.Left))
                 Move(Direction.West);
-            if (Input.IsKeyDown(Keys.Right))
+            else if (Input.IsKeyDown(Keys.Right))
                 Move(Direction.East);
-            if (Input.IsKeyDown(Keys.Up))
+            else if (Input.IsKeyDown(Keys.Up))
                 Move(Direction.North);
-            if (Input.IsKeyDown(Keys.Down))
+            else if (Input.IsKeyDown(Keys.Down))
                 Move(Direction.South);
 
             base.Update();

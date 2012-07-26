@@ -59,7 +59,7 @@ namespace CrashNet.GameObjects
         /// <param name="rotation">How much the object should be rotated by.</param>
         /// <param name="rotationSpeed">The speed at which the object rotates.</param>
         public GameObject(Vector2 position, Vector2 initialVelocity, Vector2 maxSpeed, Vector2 acceleration, 
-            Texture2D texture, float rotation=(float)TWO_PI, float rotationSpeed=DEFAULT_ROTATION_SPEED)
+            Texture2D texture, float rotation=0, float rotationSpeed=DEFAULT_ROTATION_SPEED)
         {
             this.Position = position;
 
@@ -87,7 +87,7 @@ namespace CrashNet.GameObjects
         internal virtual void Draw(SpriteBatch spriteBatch)
         {
             spriteBatch.Draw(Texture, new Rectangle((int)Position.X, (int)Position.Y, Texture.Width, Texture.Height), 
-                null, Color.White, rotation, Vector2.Zero, SpriteEffects.None, 0);
+                null, Color.White, rotation, new Vector2(Texture.Width/2, Texture.Height/2), SpriteEffects.None, 0);
         }
 
         /// <summary>
@@ -101,9 +101,9 @@ namespace CrashNet.GameObjects
 
             // There's this weird arithmetic bug where these produce very small values during movements along
             // the opposite axes, so round them.
-            float xComponent = (float)(acceleration.X * Math.Round(Math.Sin(angle), 4));
+            float xComponent = (float)(acceleration.X * Math.Round(Math.Sin(angle), 6));
             // up is negative, down is positive, so multiply by -1. 
-            float yComponent = (float)(-1 * acceleration.Y * Math.Round(Math.Cos(angle), 4));
+            float yComponent = (float)(-1 * acceleration.Y * Math.Round(Math.Cos(angle), 6));
             ChangeVelocity(new Vector2(xComponent, yComponent));
         }
 
@@ -113,7 +113,7 @@ namespace CrashNet.GameObjects
             {
                 case Direction.North:
                 default:
-                    return TWO_PI;
+                    return 0;
                 case Direction.NorthWest:
                     return SEVEN_PI_OVER_FOUR;
                 case Direction.West:
@@ -183,9 +183,16 @@ namespace CrashNet.GameObjects
         /// <param name="newAngle">The new angle of the object, in radians.</param>
         private void RotateTo(float newAngle)
         {
-            //TODO: two directions to rotate; choose the one with the smaller distance.
-
-            rotationChange = newAngle - rotation;
+            // two possible directions to rotate; choose the one with less
+            // distance. Do so by adjusting values based on the newAngle and
+            // rotation so that one of them is the top of the circle, then determine
+            // distance from there.
+            float adjust = Math.Min(newAngle, rotation);
+            float choice1 = (newAngle + adjust) - (rotation + adjust);
+            float choice2 = (newAngle + adjust) + (rotation + adjust);
+            if (choice1 % TWO_PI < choice2 % TWO_PI)
+                rotationChange = (float)(choice1 % TWO_PI);
+            else rotationChange = (float)(choice2 % TWO_PI);
         }
 
         /// <summary>
@@ -210,25 +217,22 @@ namespace CrashNet.GameObjects
             // keep rotating.
             if (rotationSpeed > Math.Abs(rotationChange))
             {
-                rotation = rotation + rotationChange;
+                rotation = (rotation + rotationChange) % (float)TWO_PI;
                 rotationChange = 0;
             }
             else
             {
                 if (rotationChange >= 0)
                 {
-                    rotation += rotationSpeed;
+                    rotation = (rotation + rotationSpeed) % (float)TWO_PI;
                     rotationChange -= rotationSpeed;
                 }
                 else
                 {
-                    rotation -= rotationSpeed;
+                    rotation = (rotation - rotationSpeed) % (float)TWO_PI;
                     rotationChange += rotationSpeed;
                 }
             }
-
-            //treat rotation of 0 as 2Pi.
-            if (rotation == 0) rotation = (float)TWO_PI;
         }
 
         /// <summary>
