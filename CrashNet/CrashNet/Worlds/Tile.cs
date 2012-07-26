@@ -17,7 +17,7 @@ namespace CrashNet.Worlds
         /// <param name="position">The position of the tile.</param>
         /// <param name="type">The type of the tile.</param>
         public Tile(Vector2 position, Tiletype type) :
-            base(position, Vector2.Zero, TextureManager.GetTexture(type))
+            base(position, Vector2.Zero, Vector2.Zero, Vector2.Zero, TextureManager.GetTexture(type))
         {
             this.type = type;
         }

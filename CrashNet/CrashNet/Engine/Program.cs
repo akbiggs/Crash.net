@@ -1,4 +1,5 @@
 using System;
+using CrashNet.Engine;
 
 namespace CrashNet
 {

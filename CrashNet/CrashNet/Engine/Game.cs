@@ -10,8 +10,9 @@ using Microsoft.Xna.Framework.Input;
 using Microsoft.Xna.Framework.Media;
 using CrashNet.Worlds;
 using CrashNet.GameObjects;
+using CrashNet.Engine;
 
-namespace CrashNet
+namespace CrashNet.Engine
 {
     /// <summary>
     /// This is the main type for your game
@@ -97,6 +98,8 @@ namespace CrashNet
         /// <param name="gameTime">Provides a snapshot of timing values.</param>
         protected override void Update(GameTime gameTime)
         {
+            Input.Update();
+
             // Allows the game to exit
             if (GamePad.GetState(PlayerIndex.One).Buttons.Back == ButtonState.Pressed)
                 this.Exit();

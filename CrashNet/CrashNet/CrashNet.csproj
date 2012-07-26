@@ -76,6 +76,7 @@
     <Compile Include="Engine\BBox.cs" />
     <Compile Include="Engine\Cutscene.cs" />
     <Compile Include="Engine\FontManager.cs" />
+    <Compile Include="Engine\Input.cs" />
     <Compile Include="GameObjects\Direction.cs" />
     <Compile Include="GameObjects\Player.cs" />
     <Compile Include="Interface\GameMenu.cs" />
