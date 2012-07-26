@@ -35,7 +35,8 @@ namespace CrashNet.GameObjects
         /// Whether or not the object has moved in the last 
         /// update.
         /// </summary>
-        bool hasMoved = false;
+        bool hasMovedX = false;
+        bool hasMovedY = false;
 
         /// <summary>
         /// Make a new game object.
@@ -65,10 +66,12 @@ namespace CrashNet.GameObjects
         internal virtual void Update()
         {
             if (ShouldRotate()) Rotate();
-            if (!hasMoved) Decellerate();
+            if (!hasMovedX) DecellerateX();
+            if (!hasMovedY) DecellerateY();
             Position = Vector2.Add(Position, velocity);
 
-            hasMoved = false;
+            hasMovedX = false;
+            hasMovedY = false;
         }
 
         internal virtual void Draw(SpriteBatch spriteBatch)
@@ -83,25 +86,28 @@ namespace CrashNet.GameObjects
         /// <param name="direction">The direction in which to move the object.</param>
         internal virtual void Move(Direction direction)
         {
-            hasMoved = true;
             switch (direction)
             {
                 // TODO: throw rads to degrees stuff into a helper method
                 // Also, fix bug where moving player in two directions makes them
                 // face only one.
                 case Direction.North:
+                    hasMovedY = true;
                     RotateTo((float)(2 * Math.PI));
                     ChangeVelocity(new Vector2(0, -acceleration.Y));
                     break;
                 case Direction.South:
+                    hasMovedY = true;
                     RotateTo((float)Math.PI);
                     ChangeVelocity(new Vector2(0, acceleration.Y));
                     break;
                 case Direction.West:
+                    hasMovedX = true;
                     RotateTo((float)(1.5 * Math.PI));
                     ChangeVelocity(new Vector2(-acceleration.X, 0));
                     break;
                 case Direction.East:
+                    hasMovedX = true;
                     RotateTo((float)(Math.PI / 2));
                     ChangeVelocity(new Vector2(acceleration.X, 0));
                     break;
@@ -127,14 +133,22 @@ namespace CrashNet.GameObjects
             else velocity.Y = newVelocity.Y;
         }
 
-        private void Decellerate()
+        /// <summary>
+        /// Decellerates the object on the x-axis.
+        /// </summary>
+        private void DecellerateX()
         {
-            //TODO: decellerate the object by its acceleration
             if (Math.Abs(velocity.X) <= Math.Abs(acceleration.X))
                 velocity.X = 0;
             else
                 velocity.X = velocity.X >= 0 ? velocity.X - acceleration.X : velocity.X + acceleration.X;
+        }
 
+        /// <summary>
+        /// Decellerates the object on the y-axis.
+        /// </summary>
+        private void DecellerateY()
+        {
             if (Math.Abs(velocity.Y) <= Math.Abs(acceleration.Y))
                 velocity.Y = 0;
             else
