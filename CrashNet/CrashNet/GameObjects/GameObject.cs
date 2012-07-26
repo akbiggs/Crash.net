@@ -11,6 +11,15 @@ namespace CrashNet.GameObjects
     class GameObject
     {
         const float DEFAULT_ROTATION_SPEED = (float)(Math.PI / 10);
+        const double PI = Math.PI;
+        const double PI_OVER_TWO = PI / 2;
+        const double THREE_PI_OVER_TWO = 1.5 * PI;
+        const double TWO_PI = 2 * PI;
+        //diagonals
+        const double PI_OVER_FOUR = 0.25 * PI;
+        const double THREE_PI_OVER_FOUR = 0.75 * PI;
+        const double FIVE_PI_OVER_FOUR = 1.25 * PI;
+        const double SEVEN_PI_OVER_FOUR = 1.75 * PI;
         
         Vector2 position;
 
@@ -23,6 +32,7 @@ namespace CrashNet.GameObjects
          
         /// <summary>
         /// How much the object is rotated, in radians.
+        /// A rotation of 0 is treated as a rotation of 2Pi.
         /// </summary>
         float rotation;
         float rotationChange = 0;
@@ -49,7 +59,7 @@ namespace CrashNet.GameObjects
         /// <param name="rotation">How much the object should be rotated by.</param>
         /// <param name="rotationSpeed">The speed at which the object rotates.</param>
         public GameObject(Vector2 position, Vector2 initialVelocity, Vector2 maxSpeed, Vector2 acceleration, 
-            Texture2D texture, float rotation=(float)(2*Math.PI), float rotationSpeed=DEFAULT_ROTATION_SPEED)
+            Texture2D texture, float rotation=(float)TWO_PI, float rotationSpeed=DEFAULT_ROTATION_SPEED)
         {
             this.Position = position;
 
@@ -86,31 +96,38 @@ namespace CrashNet.GameObjects
         /// <param name="direction">The direction in which to move the object.</param>
         internal virtual void Move(Direction direction)
         {
+            float angle = (float)DirectionToRadians(direction);
+            RotateTo(angle);
+
+            // There's this weird arithmetic bug where these produce very small values during movements along
+            // the opposite axes, so round them.
+            float xComponent = (float)(acceleration.X * Math.Round(Math.Sin(angle), 4));
+            // up is negative, down is positive, so multiply by -1. 
+            float yComponent = (float)(-1 * acceleration.Y * Math.Round(Math.Cos(angle), 4));
+            ChangeVelocity(new Vector2(xComponent, yComponent));
+        }
+
+        private double DirectionToRadians(Direction direction)
+        {
             switch (direction)
             {
-                // TODO: throw rads to degrees stuff into a helper method
-                // Also, fix bug where moving player in two directions makes them
-                // face only one.
                 case Direction.North:
-                    hasMovedY = true;
-                    RotateTo((float)(2 * Math.PI));
-                    ChangeVelocity(new Vector2(0, -acceleration.Y));
-                    break;
-                case Direction.South:
-                    hasMovedY = true;
-                    RotateTo((float)Math.PI);
-                    ChangeVelocity(new Vector2(0, acceleration.Y));
-                    break;
+                default:
+                    return TWO_PI;
+                case Direction.NorthWest:
+                    return SEVEN_PI_OVER_FOUR;
                 case Direction.West:
-                    hasMovedX = true;
-                    RotateTo((float)(1.5 * Math.PI));
-                    ChangeVelocity(new Vector2(-acceleration.X, 0));
-                    break;
+                    return THREE_PI_OVER_TWO;
+                case Direction.SouthWest:
+                    return FIVE_PI_OVER_FOUR;
+                case Direction.South:
+                    return PI;
+                case Direction.SouthEast:
+                    return THREE_PI_OVER_FOUR;
                 case Direction.East:
-                    hasMovedX = true;
-                    RotateTo((float)(Math.PI / 2));
-                    ChangeVelocity(new Vector2(acceleration.X, 0));
-                    break;
+                    return PI_OVER_TWO;
+                case Direction.NorthEast:
+                    return PI_OVER_FOUR;
             }
         }
 
@@ -121,6 +138,9 @@ namespace CrashNet.GameObjects
         /// <param name="amount">The amount to change the velocity by.</param>
         private void ChangeVelocity(Vector2 amount)
         {
+            if (amount.X != 0) hasMovedX = true;
+            if (amount.Y != 0) 
+                hasMovedY = true;
             Vector2 newVelocity = Vector2.Add(velocity, amount);
 
             // if we've passed the max velocity boundaries, reset velocity to them.
@@ -163,6 +183,8 @@ namespace CrashNet.GameObjects
         /// <param name="newAngle">The new angle of the object, in radians.</param>
         private void RotateTo(float newAngle)
         {
+            //TODO: two directions to rotate; choose the one with the smaller distance.
+
             rotationChange = newAngle - rotation;
         }
 
@@ -204,6 +226,9 @@ namespace CrashNet.GameObjects
                     rotationChange += rotationSpeed;
                 }
             }
+
+            //treat rotation of 0 as 2Pi.
+            if (rotation == 0) rotation = (float)TWO_PI;
         }
 
         /// <summary>

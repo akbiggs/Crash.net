@@ -77,7 +77,7 @@
     <Compile Include="Engine\Cutscene.cs" />
     <Compile Include="Engine\FontManager.cs" />
     <Compile Include="Engine\Input.cs" />
-    <Compile Include="GameObjects\Direction.cs" />
+    <Compile Include="Engine\Direction.cs" />
     <Compile Include="GameObjects\Player.cs" />
     <Compile Include="Interface\GameMenu.cs" />
     <Compile Include="Engine\GameState.cs" />
