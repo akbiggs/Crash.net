@@ -14,6 +14,7 @@ namespace CrashNet.Engine
         South,
         SouthEast,
         East,
-        NorthEast
+        NorthEast,
+        None
     }
 }

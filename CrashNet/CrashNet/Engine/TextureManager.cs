@@ -58,6 +58,33 @@ namespace CrashNet
         }
 
         /// <summary>
+        /// Gets a texture.
+        /// </summary>
+        /// <param name="tiletype">The type of tile to get the texture of.</param>
+        /// <returns>The requested texture.</returns>
+        public static Texture2D GetTexture(Worlds.Tiletype tiletype)
+        {
+            return GetTexture(GetTextureName(tiletype));
+        }
+
+        internal static String GetTextureName(Worlds.Tiletype tiletype)
+        {
+            switch (tiletype)
+            {
+                case Worlds.Tiletype.Ground:
+                default:
+                    return TextureNames.GROUND;
+                case Worlds.Tiletype.Wall:
+                    return TextureNames.WALL;
+            }
+        }
+
+        public static Color[,] GetColors(Worlds.Tiletype tiletype)
+        {
+            return GetColors(GetTextureName(tiletype));
+        }
+
+        /// <summary>
         /// Gets the colors of the texture.
         /// </summary>
         /// <param name="name">The filename of the texture the colors
@@ -67,7 +94,7 @@ namespace CrashNet
         {
             return colDic[name];
         }
-
+            
         /// <summary>
         /// Converts the given texture to a 2D array of colors.
         /// </summary>
@@ -86,27 +113,7 @@ namespace CrashNet
             return colors2D;
         }
 
-        /// <summary>
-        /// Gets a texture.
-        /// </summary>
-        /// <param name="tiletype">The type of tile to get the texture of.</param>
-        /// <returns>The requested texture.</returns>
-        internal static Texture2D GetTexture(Worlds.Tiletype tiletype)
-        {
-            string name;
-            switch (tiletype)
-            {
-                case Worlds.Tiletype.Ground:
-                default:
-                    name = TextureNames.GROUND;
-                    break;
-                case Worlds.Tiletype.Wall:
-                    name = TextureNames.WALL;
-                    break;
-            }
-
-            return GetTexture(name);
-        }
+        
     }
 
     //stores constants for texture names

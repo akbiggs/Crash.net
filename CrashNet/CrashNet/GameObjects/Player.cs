@@ -65,6 +65,8 @@ namespace CrashNet.GameObjects
                 Move(Direction.North);
             else if (Input.IsKeyDown(Down))
                 Move(Direction.South);
+            else
+                Move(Direction.None);
 
             base.Update();
         }

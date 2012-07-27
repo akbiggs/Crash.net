@@ -4,6 +4,8 @@ using System.Linq;
 using System.Text;
 using CrashNet.Worlds;
 using CrashNet.GameObjects;
+using Microsoft.Xna.Framework;
+using CrashNet.Engine;
 
 namespace CrashNet
 {
@@ -18,6 +20,7 @@ namespace CrashNet
         /// The room that is currently being accessed in the world.
         /// </summary>
         Room curRoom;
+        Vector2 roomCoords;
 
         /// <summary>
         /// The width of the world in rooms.
@@ -46,7 +49,13 @@ namespace CrashNet
                 for (int y = 0; y < Height; y++)
                     rooms[x, y] = new Room(32, 32);
 
-            curRoom = GetStartRoom();
+            roomCoords = GetStartRoomCoords();
+            curRoom = rooms[(int)roomCoords.X, (int)roomCoords.Y];
+        }
+
+        private Vector2 GetStartRoomCoords()
+        {
+ 	        return new Vector2(Width / 2, Height / 2);
         }
 
         /// <summary>
@@ -68,15 +77,6 @@ namespace CrashNet
             room.Add(obj);
         }
 
-        /// <summary>
-        /// Gets the starting room of the world.
-        /// </summary>
-        /// <returns>The starting room of the world.</returns>
-        private Room GetStartRoom()
-        {
-            return rooms[Width / 2, Height / 2];
-        }
-
         internal void Update()
         {
             curRoom.Update();
@@ -85,6 +85,36 @@ namespace CrashNet
         internal void Draw(Microsoft.Xna.Framework.Graphics.SpriteBatch spriteBatch)
         {
             curRoom.Draw(spriteBatch);
+
+            string roomString = "Room: (" + roomCoords.X.ToString() + ", " + (string)roomCoords.Y.ToString() + ")";
+            spriteBatch.DrawString(FontManager.GetFont(FontNames.MAIN_MENU_FONT), roomString, 
+                new Vector2(10, 10), Color.White);
+        }
+
+        private Room GetNextRoom(Direction direction)
+        {
+            switch (direction)
+            {
+                case Direction.None:
+                default:
+                    return curRoom;
+                case Direction.North:
+                    return rooms[(int)roomCoords.X, (int)roomCoords.Y - 1];
+                case Direction.NorthWest:
+                    return rooms[(int)roomCoords.X - 1, (int)roomCoords.Y - 1];
+                case Direction.West:
+                    return rooms[(int)roomCoords.X - 1, (int)roomCoords.Y];
+                case Direction.SouthWest:
+                    return rooms[(int)roomCoords.X - 1, (int)roomCoords.Y + 1];
+                case Direction.South:
+                    return rooms[(int)roomCoords.X, (int)roomCoords.Y + 1];
+                case Direction.SouthEast:
+                    return rooms[(int)roomCoords.X + 1, (int)roomCoords.Y + 1];
+                case Direction.East:
+                    return rooms[(int)roomCoords.X + 1, (int)roomCoords.Y];
+                case Direction.NorthEast:
+                    return rooms[(int)roomCoords.X + 1, (int)roomCoords.Y - 1];
+            }
         }
     }
 

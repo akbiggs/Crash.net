@@ -22,7 +22,10 @@ namespace CrashNet.Worlds
             this.type = type;
         }
 
-
+        public Color[,] GetColors()
+        {
+            return TextureManager.GetColors(type);
+        }
     }
 
     enum Tiletype

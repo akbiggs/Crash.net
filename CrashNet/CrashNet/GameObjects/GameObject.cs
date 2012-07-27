@@ -42,13 +42,6 @@ namespace CrashNet.GameObjects
         BBox BBox = null;
 
         /// <summary>
-        /// Whether or not the object has moved in the last 
-        /// update.
-        /// </summary>
-        bool hasMovedX = false;
-        bool hasMovedY = false;
-
-        /// <summary>
         /// Make a new game object.
         /// </summary>
         /// <param name="position">The starting position of the object.</param>
@@ -76,12 +69,6 @@ namespace CrashNet.GameObjects
         internal virtual void Update()
         {
             if (ShouldRotate()) Rotate();
-            if (!hasMovedX) DecellerateX();
-            if (!hasMovedY) DecellerateY();
-            Position = Vector2.Add(Position, velocity);
-
-            hasMovedX = false;
-            hasMovedY = false;
         }
 
         internal virtual void Draw(SpriteBatch spriteBatch)
@@ -96,15 +83,23 @@ namespace CrashNet.GameObjects
         /// <param name="direction">The direction in which to move the object.</param>
         internal virtual void Move(Direction direction)
         {
-            float angle = (float)DirectionToRadians(direction);
-            RotateTo(angle);
+            float xComponent, yComponent;
+            if (direction == Direction.None)
+                xComponent = yComponent = 0;
+            else
+            {
+                float angle = (float)DirectionToRadians(direction);
+                RotateTo(angle);
 
-            // There's this weird arithmetic bug where these produce very small values during movements along
-            // the opposite axes, so round them.
-            float xComponent = (float)(acceleration.X * Math.Round(Math.Sin(angle), 6));
-            // up is negative, down is positive, so multiply by -1. 
-            float yComponent = (float)(-1 * acceleration.Y * Math.Round(Math.Cos(angle), 6));
+                // There's this weird arithmetic bug where these produce very small values during movements along
+                // the opposite axes, so round them.
+                xComponent = (float)(acceleration.X * Math.Round(Math.Sin(angle), 6));
+                // up is negative, down is positive, so multiply by -1. 
+                yComponent = (float)(-1 * acceleration.Y * Math.Round(Math.Cos(angle), 6));
+                
+            }
             ChangeVelocity(new Vector2(xComponent, yComponent));
+            Position = Vector2.Add(position, velocity);
         }
 
         private double DirectionToRadians(Direction direction)
@@ -138,9 +133,8 @@ namespace CrashNet.GameObjects
         /// <param name="amount">The amount to change the velocity by.</param>
         private void ChangeVelocity(Vector2 amount)
         {
-            if (amount.X != 0) hasMovedX = true;
-            if (amount.Y != 0) 
-                hasMovedY = true;
+            if (amount.X == 0) DecellerateX();
+            if (amount.Y == 0) DecellerateY();
             Vector2 newVelocity = Vector2.Add(velocity, amount);
 
             // if we've passed the max velocity boundaries, reset velocity to them.
