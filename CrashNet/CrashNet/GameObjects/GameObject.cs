@@ -11,6 +11,10 @@ namespace CrashNet.GameObjects
 {
     class GameObject
     {
+        //how much the player should be kept away from any walls
+        const float WALL_PADDING = 0.1f;
+
+        //used for calculating rotation angles
         const float DEFAULT_ROTATION_SPEED = (float)(Math.PI / 20);
         const double PI = MathHelper.Pi;
         const double PI_OVER_TWO = MathHelper.PiOver2;
@@ -161,7 +165,7 @@ namespace CrashNet.GameObjects
                 if (depth != 0)
                 {
                     Velocity.Y = 0;
-                    Position = new Vector2(Position.X, Position.Y + depth);
+                    Position = new Vector2(Position.X, Position.Y + depth + (WALL_PADDING * Math.Sign(depth)));
                 }
             }
         }
@@ -181,7 +185,7 @@ namespace CrashNet.GameObjects
                 if (depth != 0)
                 {
                     Velocity.X = 0;
-                    Position = new Vector2(Position.X + depth, Position.Y);
+                    Position = new Vector2(Position.X + depth + (WALL_PADDING * Math.Sign(depth)), Position.Y);
                 }
             }
         }

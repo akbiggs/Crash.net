@@ -35,7 +35,7 @@ namespace CrashNet.Engine
                 return 0f;
 
             // Calculate and return intersection depths.
-            return distanceX > 0 ? minDistanceX - distanceX + 0.001f : -minDistanceX - distanceX - 0.001f;
+            return distanceX > 0 ? minDistanceX - distanceX : -minDistanceX - distanceX;
         }
 
         /// from http://pastie.org/3152377
@@ -65,7 +65,7 @@ namespace CrashNet.Engine
                 return 0f;
 
             // Calculate and return intersection depths.
-            return distanceY > 0 ? minDistanceY - distanceY + 0.001f : -minDistanceY - distanceY - 0.001f;
+            return distanceY > 0 ? minDistanceY - distanceY : -minDistanceY - distanceY;
         }
 
         Rectangle box;
