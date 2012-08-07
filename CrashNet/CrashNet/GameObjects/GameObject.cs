@@ -28,7 +28,7 @@ namespace CrashNet.GameObjects
         /// <summary>
         /// The velocity of the object.
         /// </summary>
-        Vector2 velocity;
+        public Vector2 Velocity;
         Vector2 maxVelocity;
         Vector2 acceleration;
         Vector2 deceleration;
@@ -61,7 +61,7 @@ namespace CrashNet.GameObjects
             this.Position = position;
             this.origin = origin;
 
-            this.velocity = initialVelocity;
+            this.Velocity = initialVelocity;
             this.maxVelocity = maxSpeed;
             this.acceleration = acceleration;
             this.deceleration = deceleration;
@@ -73,6 +73,11 @@ namespace CrashNet.GameObjects
         }
 
         internal virtual void Update()
+        {
+            if (ShouldRotate()) Rotate();
+        }
+
+        internal virtual void Update(Room room)
         {
             if (ShouldRotate()) Rotate();
         }
@@ -106,9 +111,82 @@ namespace CrashNet.GameObjects
                 
             }
             ChangeVelocity(new Vector2(xComponent, yComponent));
-            Position = Vector2.Add(position, velocity);
+            Position = Vector2.Add(position, Velocity);
         }
 
+        /// <summary>
+        /// Moves the object in the given direction in the context of
+        /// being in the given room, meaning the object will collide against
+        /// any walls in the room.
+        /// </summary>
+        /// <param name="direction">The direction to move the object.</param>
+        /// <param name="room">The room in which the object is moving around.</param>
+        internal virtual void Move(Direction direction, Room room)
+        {
+            float xComponent, yComponent;
+            if (direction == Direction.None)
+                xComponent = yComponent = 0;
+            else
+            {
+                float angle = (float)DirectionToRadians(direction);
+                RotateTo(angle);
+
+                // There's this weird arithmetic bug where these produce very small values during movements along
+                // the opposite axes, so round them.
+                xComponent = (float)(acceleration.X * Math.Round(Math.Sin(angle), 6));
+                // up is negative, down is positive, so multiply by -1. 
+                yComponent = (float)(-1 * acceleration.Y * Math.Round(Math.Cos(angle), 6));
+
+            }
+            ChangeVelocity(new Vector2(xComponent, yComponent));
+            if (Velocity.X != 0)
+                ChangeXPosition(Velocity.X, room);
+            if (Velocity.Y != 0)
+                ChangeYPosition(Velocity.Y, room);
+        }
+
+        private void ChangeYPosition(float amount, Room room)
+        {
+            // 1. change the y-pos.
+            // 2. round to prevent jittering in some situations
+            // 3. go through each intersection, and fix it.
+            // Thanks to David Gouveia http://gamedev.stackexchange.com/users/11686/david-gouveia
+            Position = new Vector2(Position.X, (float)Math.Round(Position.Y + amount));
+
+            List<Tile> collidingWalls = room.GetIntersectingWalls(this);
+
+            if (collidingWalls.Count > 0)
+                Velocity.Y = 0;
+            foreach (Tile tile in collidingWalls)
+            {
+                float depth = BBox.GetVerticalIntersectionDepth(BBox, tile.BBox);
+                Position = new Vector2(Position.X, Position.Y + depth);
+            }
+        }
+
+        private void ChangeXPosition(float amount, Room room)
+        {
+            // 1. change the x-pos.
+            // 2. round to prevent jittering in some situations
+            // 3. go through each intersection, and fix it.
+            // Thanks to David Gouveia http://gamedev.stackexchange.com/users/11686/david-gouveia
+            Position = new Vector2((float)Math.Round(Position.X + amount), Position.Y);
+            List<Tile> collidingWalls = room.GetIntersectingWalls(this);
+
+            if (collidingWalls.Count > 0)
+                Velocity.X = 0;
+            foreach (Tile tile in collidingWalls)
+            {
+                float depth = BBox.GetHorizontalIntersectionDepth(BBox, tile.BBox);
+                Position = new Vector2(Position.X + depth, Position.Y);
+            }
+        }
+
+        /// <summary>
+        /// Converts the given direction into radians.
+        /// </summary>
+        /// <param name="direction">A direction.</param>
+        /// <returns>The angle of rotation of the direction, in radians.</returns>
         private double DirectionToRadians(Direction direction)
         {
             switch (direction)
@@ -142,16 +220,11 @@ namespace CrashNet.GameObjects
         {
             if (amount.X == 0) DecellerateX();
             if (amount.Y == 0) DecellerateY();
-            Vector2 newVelocity = Vector2.Add(velocity, amount);
+            Vector2 newVelocity = Vector2.Add(Velocity, amount);
 
-            // if we've passed the max velocity boundaries, reset velocity to them.
-            if (Math.Abs(newVelocity.X) > Math.Abs(maxVelocity.X))
-                velocity.X = newVelocity.X >= 0 ? maxVelocity.X : -maxVelocity.X;
-            else velocity.X = newVelocity.X;
-
-            if (Math.Abs(newVelocity.Y) > Math.Abs(maxVelocity.Y))
-                velocity.Y = newVelocity.Y >= 0 ? maxVelocity.Y : -maxVelocity.Y;
-            else velocity.Y = newVelocity.Y;
+            // restrain the velocity to the maximums
+            Velocity = Vector2.Clamp(newVelocity, new Vector2(-maxVelocity.X, -maxVelocity.Y),
+                new Vector2(maxVelocity.X, maxVelocity.Y));
         }
 
         /// <summary>
@@ -159,10 +232,10 @@ namespace CrashNet.GameObjects
         /// </summary>
         private void DecellerateX()
         {
-            if (Math.Abs(velocity.X) <= Math.Abs(acceleration.X))
-                velocity.X = 0;
+            if (Math.Abs(Velocity.X) <= Math.Abs(acceleration.X))
+                Velocity.X = 0;
             else
-                velocity.X = velocity.X >= 0 ? velocity.X - deceleration.X : velocity.X + deceleration.X;
+                Velocity.X = Velocity.X >= 0 ? Velocity.X - deceleration.X : Velocity.X + deceleration.X;
         }
 
         /// <summary>
@@ -170,10 +243,10 @@ namespace CrashNet.GameObjects
         /// </summary>
         private void DecellerateY()
         {
-            if (Math.Abs(velocity.Y) <= Math.Abs(acceleration.Y))
-                velocity.Y = 0;
+            if (Math.Abs(Velocity.Y) <= Math.Abs(acceleration.Y))
+                Velocity.Y = 0;
             else
-                velocity.Y = velocity.Y >= 0 ? velocity.Y - deceleration.Y : velocity.Y + deceleration.Y;
+                Velocity.Y = Velocity.Y >= 0 ? Velocity.Y - deceleration.Y : Velocity.Y + deceleration.Y;
         }
 
         /// <summary>

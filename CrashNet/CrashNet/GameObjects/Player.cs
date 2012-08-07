@@ -81,6 +81,33 @@ namespace CrashNet.GameObjects
             }
         }
 
+        internal override void Update(Room room)
+        {
+            if (IsAlive)
+            {
+                if (Input.IsKeyDown(Up) && Input.IsKeyDown(Left))
+                    Move(Direction.NorthWest, room);
+                else if (Input.IsKeyDown(Up) && Input.IsKeyDown(Right))
+                    Move(Direction.NorthEast, room);
+                else if (Input.IsKeyDown(Down) && Input.IsKeyDown(Left))
+                    Move(Direction.SouthWest, room);
+                else if (Input.IsKeyDown(Down) && Input.IsKeyDown(Right))
+                    Move(Direction.SouthEast, room);
+                else if (Input.IsKeyDown(Left))
+                    Move(Direction.West, room);
+                else if (Input.IsKeyDown(Right))
+                    Move(Direction.East, room);
+                else if (Input.IsKeyDown(Up))
+                    Move(Direction.North, room);
+                else if (Input.IsKeyDown(Down))
+                    Move(Direction.South, room);
+                else
+                    Move(Direction.None, room);
+
+                base.Update();
+            }
+        }
+
         private void Die()
         {
             IsAlive = false;

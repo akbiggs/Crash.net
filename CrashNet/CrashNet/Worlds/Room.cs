@@ -57,9 +57,9 @@ namespace CrashNet.Worlds
             this.objects = new List<GameObject>();
 
             tiles = new Tile[Width, Height];
-            for (int x = 0; x < Width; x++)
-                for (int y = 0; y < Height; y++)
-                    SetTile(x, y, new Tile(new Vector2(x * TILESIZE, y * TILESIZE), TileType.Ground));
+            for (int col = 0; col < Width; col++)
+                for (int row = 0; row < Height; row++)
+                    SetTile(col, row, new Tile(new Vector2(col * TILESIZE, row * TILESIZE), TileType.Ground));
         }
 
         internal void Update()
@@ -84,12 +84,12 @@ namespace CrashNet.Worlds
 
             foreach (GameObject obj in objects)
             {
-                obj.Update();
+                obj.Update(this);
                 KeepInBounds(obj);
 
                 foreach (GameObject other in objects)
                 {
-                    if (other != obj) 
+                    if (obj != other) 
                         Collide(obj, other);
                 }        
             }
@@ -187,142 +187,8 @@ namespace CrashNet.Worlds
 
         private void KeepInBounds(GameObject obj)
         {
-            
-        }
-
-        private List<float> GetXBounds(GameObject obj)
-        {
-            Vector2 objCoords = GetTileCoordsByPixel(obj.Position);
-            float lowerBoundX = 0, upperBoundX = GetWidthInPixels();
-
-            // determine how much the object spans
-            int colSpan = GetColSpan(obj);
-            int rowSpan = GetRowSpan(obj);
-            
-            // get lower bound of x-movement. We only need to check about two tiles around to see if there's anything to be
-            // collided with.
-            bool hit = false;
-            for (int x = (int)objCoords.X; x >= Math.Max(0, (int)(objCoords.X - 2)); x--)
-            {
-                //check along all the tiles that the object spans
-                for (int y = (int)objCoords.Y; y <= objCoords.Y + colSpan; y++)
-                    if (WallAt(x, y))
-                    {
-                        // since we're colliding with the right side of the tile, add another
-                        // tile's size to it.
-                        lowerBoundX = x * TILESIZE + TILESIZE + WALL_PADDING;
-                        hit = true;
-                        break;
-                    }
-                if (hit) break;
-            }
-
-            //get upper bound of x-movement. Again, only need to check two tiles to the right.
-            hit = false;
-            for (int x = (int)objCoords.X + rowSpan; x < Math.Min(Width, (int)(objCoords.X + rowSpan + 2)); x++)
-            {
-                for (int y = (int)objCoords.Y; y <= objCoords.Y + colSpan; y++)
-                    if (WallAt(x, y))
-                    {
-                        // because we're getting the bounds of the object's position, which is at the
-                        // top-left corner of the object, subtract the width of the object's texture.
-                        upperBoundX = x * TILESIZE - obj.Texture.Width - WALL_PADDING;
-                        hit = true;
-                        break;
-                    }
-                if (hit) break;
-            }
-
-            // if the upper bound is less than the lower bound, the object is
-            // inside a corner and should be pushed out of it.
-            if (upperBoundX <= lowerBoundX)
-            {
-                // collision against left corner? push to the left
-                if (LeftCornerCollision(obj))
-                {
-                    upperBoundX -= WALL_PADDING;
-                    lowerBoundX = 0;
-                }
-                // collision against right corner? push to the right.
-                else
-                {
-                    lowerBoundX += WALL_PADDING;
-                    upperBoundX = GetWidthInPixels();
-                }
-            }
-
-            return new List<float> { lowerBoundX, upperBoundX };
-        }
-
-        private bool LeftCornerCollision(GameObject obj)
-        {
-            // TODO: use XOR to clean this up once I figure out what XOR is in XNA.
-            return (GetTileByPixel(obj.Position).GetTileType() == TileType.Wall
-                && GetTileByPixel(new Vector2(obj.BBox.Left(), obj.BBox.Bottom())).GetTileType() != TileType.Wall)
-                || (GetTileByPixel(obj.Position).GetTileType() != TileType.Wall
-                && GetTileByPixel(new Vector2(obj.BBox.Left(), obj.BBox.Bottom())).GetTileType() == TileType.Wall);
-        }
-
-        private List<float> GetYBounds(GameObject obj)
-        {
-            Vector2 objCoords = GetTileCoordsByPixel(obj.Position);
-            float lowerBoundY = 0, upperBoundY = GetHeightInPixels();
-
-            // determine the number of tiles the object can collide with height-wise and width-wise
-            int colSpan = GetColSpan(obj);
-            int rowSpan = GetRowSpan(obj);
-
-            // get lower bound of y-movement
-            bool hit = false;
-            for (int y = (int)objCoords.Y; y >= Math.Max(0, (int)(objCoords.Y - 2)); y--)
-            {
-                for (int x = (int)objCoords.X; x <= objCoords.X + rowSpan; x++)
-                    if (WallAt(x, y))
-                    {
-                        // since we're colliding with the bottom part of the tile, add
-                        // another tile's size to the bound
-                        lowerBoundY = y * TILESIZE + TILESIZE + WALL_PADDING;
-                        hit = true;
-                        break;
-                    }
-                if (hit) break;
-            }
-
-            //get upper bound of y-movement
-            hit = false;
-            for (int y = (int)objCoords.Y + colSpan; y < Math.Min(Height, (int)(objCoords.Y + colSpan + 2)); y++)
-            {
-                for (int x = (int)objCoords.X; x <= objCoords.X + rowSpan; x++)
-                    if (WallAt(x, y))
-                    {
-                        // because we're getting the bounds of the object's position, which is at the
-                        // top-left corner of the object, subtract the height of the texture.
-                        upperBoundY = y * TILESIZE - obj.Texture.Height - WALL_PADDING;
-                        hit = true;
-                        break;
-                    }
-                if (hit) break;
-            }
-
-            // if the upper bound is less than the lower bound, the object is
-            // currently inside another tile and should be pushed out.
-            if (upperBoundY < lowerBoundY)
-            {
-                // collision against bottom corner? push to the left
-                if (BottomCornerCollision(obj))
-                {
-                    upperBoundY -= WALL_PADDING;
-                    lowerBoundY = 0;
-                }
-                // collision against right corner? push to the right
-                else
-                {
-                    lowerBoundY += WALL_PADDING;
-                    upperBoundY = GetHeightInPixels();
-                }
-            }
-
-            return new List<float> { lowerBoundY, upperBoundY };
+            obj.Position = Vector2.Clamp(obj.Position, Vector2.Zero, 
+                new Vector2(GetWidthInPixels(), GetHeightInPixels()));
         }
 
         /// <summary>
@@ -333,7 +199,7 @@ namespace CrashNet.Worlds
         /// confined to 1 tile.</returns>
         private int GetColSpan(GameObject obj)
         {
-            return (int)(((obj.Position.Y % TILESIZE) + obj.Texture.Height) / TILESIZE);
+            return (int)(((obj.BBox.Y % TILESIZE) + obj.BBox.Height) / TILESIZE);
         }
 
         /// <summary>
@@ -344,14 +210,7 @@ namespace CrashNet.Worlds
         /// confined to 1 tile.</returns>
         private int GetRowSpan(GameObject obj)
         {
-            return (int)(((obj.Position.X % TILESIZE) + obj.Texture.Width) / TILESIZE);
-        }
-
-        private bool BottomCornerCollision(GameObject obj)
-        {
-            // TODO: simplify with xor
-            return (WallAtPixel(obj.Position) && !WallAtPixel(new Vector2(obj.BBox.Right(), obj.BBox.Top()))) ||
-                (!WallAtPixel(obj.Position) && WallAtPixel(new Vector2(obj.BBox.Right(), obj.BBox.Top())));
+            return (int)(((obj.BBox.X % TILESIZE) + obj.BBox.Width) / TILESIZE);
         }
 
         /// <summary>
@@ -381,9 +240,41 @@ namespace CrashNet.Worlds
         /// <param name="row">The row of the tile.</param>
         /// <param name="col">The column of the tile.</param>
         /// <returns>True if there is a wall at the given row/column, false otherwise.</returns>
-        private bool WallAt(int row, int col)
+        private bool WallAt(int col, int row)
         {
-            return tiles[row, col].GetTileType() == TileType.Wall;
+            return tiles[col, row].GetTileType() == TileType.Wall;
+        }
+
+        /// <summary>
+        /// Return whether or not a wall overlaps the given box.
+        /// </summary>
+        /// <param name="box">The bounding box that might be overlapping a wall.</param>
+        /// <returns>True if the box overlaps a wall, false otherwise.</returns>
+        private bool WallIntersects(BBox box)
+        {
+            // TODO: check every tile that the box overlaps, not just the corners.
+            return (WallAtPixel(box.Left, box.Top) || WallAtPixel(box.Right, box.Top) ||
+                WallAtPixel(box.Left, box.Bottom) || WallAtPixel(box.Right, box.Bottom));
+        }
+
+        /// <summary>
+        /// Get all the walls that intersect with the given object.
+        /// </summary>
+        /// <param name="obj">The object.</param>
+        /// <returns>All the walls that collide with the object.</returns>
+        public List<Tile> GetIntersectingWalls(GameObject obj)
+        {
+            List<Tile> intersects = new List<Tile>();
+            Vector2 tileCoords = GetTileCoordsByPixel(obj.BBox.Position);
+            float colSpan = GetColSpan(obj);
+            float rowSpan = GetRowSpan(obj);
+
+            for (int x = (int)tileCoords.X - 1; x <= tileCoords.X + rowSpan + 1; x++)
+                for (int y = (int)tileCoords.Y - 1; y <= tileCoords.Y + colSpan + 1; y++)
+                    if (WallAt(x, y))
+                        intersects.Add(tiles[x, y]);
+
+            return intersects;
         }
 
         private Vector2 GetTileCoordsByPixel(Vector2 pixel)
@@ -449,6 +340,23 @@ namespace CrashNet.Worlds
         private Vector2 GetTileCoordsByPixel(float x, float y)
         {
             return new Vector2((int)(x / TILESIZE), (int)(y / TILESIZE));
+        }
+
+        /// <summary>
+        /// Gets all the coordinates that the object spans.
+        /// </summary>
+        /// <param name="obj">An object in the room.</param>
+        /// <returns>A list of all the tile coordinates that the object spans.</returns>
+        public List<Vector2> GetAllTileCoords(GameObject obj)
+        {
+            List<Vector2> coords = new List<Vector2>();
+            Vector2 start = GetTileCoordsByPixel(obj.Position);
+            Vector2 end = GetTileCoordsByPixel(new Vector2(obj.BBox.Right, obj.BBox.Bottom));
+            for (int x = (int)start.X; x <= end.X; x++)
+                for (int y = (int)start.Y; y <= end.Y; y++)
+                    coords.Add(new Vector2(x, y));
+
+            return coords;
         }
 
         public bool ShouldRender()
