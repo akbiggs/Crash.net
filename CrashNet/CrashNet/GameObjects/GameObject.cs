@@ -155,12 +155,14 @@ namespace CrashNet.GameObjects
 
             List<Tile> collidingWalls = room.GetIntersectingWalls(this);
 
-            if (collidingWalls.Count > 0)
-                Velocity.Y = 0;
             foreach (Tile tile in collidingWalls)
             {
                 float depth = BBox.GetVerticalIntersectionDepth(BBox, tile.BBox);
-                Position = new Vector2(Position.X, Position.Y + depth);
+                if (depth != 0)
+                {
+                    Velocity.Y = 0;
+                    Position = new Vector2(Position.X, Position.Y + depth);
+                }
             }
         }
 
@@ -173,12 +175,14 @@ namespace CrashNet.GameObjects
             Position = new Vector2((float)Math.Round(Position.X + amount), Position.Y);
             List<Tile> collidingWalls = room.GetIntersectingWalls(this);
 
-            if (collidingWalls.Count > 0)
-                Velocity.X = 0;
             foreach (Tile tile in collidingWalls)
             {
                 float depth = BBox.GetHorizontalIntersectionDepth(BBox, tile.BBox);
-                Position = new Vector2(Position.X + depth, Position.Y);
+                if (depth != 0)
+                {
+                    Velocity.X = 0;
+                    Position = new Vector2(Position.X + depth, Position.Y);
+                }
             }
         }
 
