@@ -5,23 +5,25 @@ using System.Text;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 using CrashNet.Engine;
+using CrashNet.Worlds;
 
 namespace CrashNet.GameObjects
 {
     class GameObject
     {
-        const float DEFAULT_ROTATION_SPEED = (float)(Math.PI / 10);
-        const double PI = Math.PI;
-        const double PI_OVER_TWO = PI / 2;
+        const float DEFAULT_ROTATION_SPEED = (float)(Math.PI / 20);
+        const double PI = MathHelper.Pi;
+        const double PI_OVER_TWO = MathHelper.PiOver2;
         const double THREE_PI_OVER_TWO = 1.5 * PI;
-        const double TWO_PI = 2 * PI;
+        const double TWO_PI = MathHelper.TwoPi;
         //diagonals
-        const double PI_OVER_FOUR = 0.25 * PI;
+        const double PI_OVER_FOUR = MathHelper.PiOver4;
         const double THREE_PI_OVER_FOUR = 0.75 * PI;
         const double FIVE_PI_OVER_FOUR = 1.25 * PI;
         const double SEVEN_PI_OVER_FOUR = 1.75 * PI;
         
         Vector2 position;
+        internal Vector2 origin;
 
         /// <summary>
         /// The velocity of the object.
@@ -29,6 +31,7 @@ namespace CrashNet.GameObjects
         Vector2 velocity;
         Vector2 maxVelocity;
         Vector2 acceleration;
+        Vector2 deceleration;
          
         /// <summary>
         /// How much the object is rotated, in radians.
@@ -39,7 +42,7 @@ namespace CrashNet.GameObjects
         float rotationSpeed;
 
         Texture2D texture; 
-        BBox BBox = null;
+        internal BBox BBox = null;
 
         /// <summary>
         /// Make a new game object.
@@ -48,17 +51,20 @@ namespace CrashNet.GameObjects
         /// <param name="initialVelocity">The initial velocity of the object.</param>
         /// <param name="maxSpeed">The maximum velocity the object can obtain.</param>
         /// <param name="acceleration">The acceleration of the object.</param>
+        /// <param name="deceleration">The deceleration of the object.</param>
         /// <param name="texture">The texture of the object.</param>
         /// <param name="rotation">How much the object should be rotated by.</param>
         /// <param name="rotationSpeed">The speed at which the object rotates.</param>
-        public GameObject(Vector2 position, Vector2 initialVelocity, Vector2 maxSpeed, Vector2 acceleration, 
-            Texture2D texture, float rotation=0, float rotationSpeed=DEFAULT_ROTATION_SPEED)
+        public GameObject(Vector2 position, Vector2 origin, Vector2 initialVelocity, Vector2 maxSpeed, Vector2 acceleration, 
+            Vector2 deceleration, Texture2D texture, float rotation=0, float rotationSpeed=DEFAULT_ROTATION_SPEED)
         {
             this.Position = position;
+            this.origin = origin;
 
             this.velocity = initialVelocity;
             this.maxVelocity = maxSpeed;
             this.acceleration = acceleration;
+            this.deceleration = deceleration;
 
             this.Texture = texture;
 
@@ -73,8 +79,9 @@ namespace CrashNet.GameObjects
 
         internal virtual void Draw(SpriteBatch spriteBatch)
         {
-            spriteBatch.Draw(Texture, new Rectangle((int)Position.X, (int)Position.Y, Texture.Width, Texture.Height), 
-                null, Color.White, rotation, new Vector2(Texture.Width/2, Texture.Height/2), SpriteEffects.None, 0);
+            spriteBatch.Draw(Texture, 
+                new Rectangle((int)(Position.X + origin.X), (int)(Position.Y + origin.Y), Texture.Width, Texture.Height), 
+                null, Color.White, rotation, origin, SpriteEffects.None, 0);
         }
 
         /// <summary>
@@ -155,7 +162,7 @@ namespace CrashNet.GameObjects
             if (Math.Abs(velocity.X) <= Math.Abs(acceleration.X))
                 velocity.X = 0;
             else
-                velocity.X = velocity.X >= 0 ? velocity.X - acceleration.X : velocity.X + acceleration.X;
+                velocity.X = velocity.X >= 0 ? velocity.X - deceleration.X : velocity.X + deceleration.X;
         }
 
         /// <summary>
@@ -166,7 +173,7 @@ namespace CrashNet.GameObjects
             if (Math.Abs(velocity.Y) <= Math.Abs(acceleration.Y))
                 velocity.Y = 0;
             else
-                velocity.Y = velocity.Y >= 0 ? velocity.Y - acceleration.Y : velocity.Y + acceleration.Y;
+                velocity.Y = velocity.Y >= 0 ? velocity.Y - deceleration.Y : velocity.Y + deceleration.Y;
         }
 
         /// <summary>
@@ -181,11 +188,11 @@ namespace CrashNet.GameObjects
             // distance. Do so by adjusting values based on the newAngle and
             // rotation so that one of them is the top of the circle, then determine
             // distance from there.
-            float choice1 = (newAngle - rotation) - (float)TWO_PI;
-            float choice2 = (newAngle - rotation);
-            if (Math.Abs(choice1 % TWO_PI) < Math.Abs(choice2 % TWO_PI))
-                rotationChange = (float)(choice1 % TWO_PI);
-            else rotationChange = (float)(choice2 % TWO_PI);
+            float choice1 = MathHelper.WrapAngle((newAngle - rotation) - (float)TWO_PI);
+            float choice2 = MathHelper.WrapAngle((newAngle - rotation));
+            if (Math.Abs(choice1) < Math.Abs(choice2))
+                rotationChange = (float)(choice1);
+            else rotationChange = (float)(choice2);
         }
 
         /// <summary>
@@ -210,22 +217,73 @@ namespace CrashNet.GameObjects
             // keep rotating.
             if (rotationSpeed > Math.Abs(rotationChange))
             {
-                rotation = (rotation + rotationChange) % (float)TWO_PI;
+                rotation = MathHelper.WrapAngle(rotation + rotationChange);
                 rotationChange = 0;
             }
             else
             {
+                // reduce the distance to rotate by the rotation speed
                 if (rotationChange >= 0)
                 {
-                    rotation = (rotation + rotationSpeed) % (float)TWO_PI;
+                    rotation = MathHelper.WrapAngle(rotation + rotationSpeed);
                     rotationChange -= rotationSpeed;
                 }
                 else
                 {
-                    rotation = (rotation - rotationSpeed) % (float)TWO_PI;
+                    rotation = MathHelper.WrapAngle(rotation - rotationSpeed);
                     rotationChange += rotationSpeed;
                 }
             }
+        }
+
+        /// <summary>
+        /// Get the collision between this and another object, as another bounded box.
+        /// </summary>
+        /// <param name="other">The object being collided with.</param>
+        /// <returns>The collision between the two objects, or BBox.Empty if there is no
+        /// collision.</returns>
+        public BBox GetCollision(GameObject other)
+        {
+            return BBox.Intersect(other.BBox);
+        }
+
+        /// <summary>
+        /// Resolves the collision in a region between this object
+        /// and another.
+        /// </summary>
+        /// <param name="other">The other object being collided with.</param>
+        /// <param name="region">The region of collision.</param>
+        /// <returns>The correction to this object's position.</returns>
+        public virtual Vector2 ResolveCollision(GameObject other, BBox region) {
+            if (other is Tile) return ResolveCollision((Tile)other, region);
+            return Vector2.Zero;
+        }
+
+        /// <summary>
+        /// Resolves the collision in a region between this object
+        /// and a tile.
+        /// </summary>
+        /// <param name="tile">The tile being collided with.</param>
+        /// <param name="region">The region of collision.</param>
+        /// <returns>The correction to this object's position.</returns>
+        public virtual Vector2 ResolveCollision(Tile tile, BBox region) {
+            Vector2 correction = Vector2.Zero;
+            if (tile.GetTileType() == TileType.Wall)
+            {
+                // push the object outside the boundaries of the wall
+                if (region.Position.X >= tile.Position.X + tile.Texture.Width / 2)
+                    correction = new Vector2(region.Width, correction.Y);
+                else correction = new Vector2(-region.Width, correction.Y);
+
+                if (region.Position.Y >= tile.Position.Y + tile.Texture.Height / 2)
+                    correction = new Vector2(correction.X, region.Height);
+                else correction = new Vector2(correction.X, -region.Height);
+
+                // push the object to the greater of the two coordinates, if they're equal push to both
+                //if () correction = new Vector2(correction.X, 0);
+                //else if () correction = new Vector2(0, correction.Y);
+            }
+            return correction;
         }
 
         /// <summary>

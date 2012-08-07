@@ -9,15 +9,16 @@ namespace CrashNet.Worlds
 {
     class Tile : GameObject
     {
-        Tiletype type;
+        TileType type;
 
         /// <summary>
         /// Make a new tile of the given type at the given position.
         /// </summary>
         /// <param name="position">The position of the tile.</param>
         /// <param name="type">The type of the tile.</param>
-        public Tile(Vector2 position, Tiletype type) :
-            base(position, Vector2.Zero, Vector2.Zero, Vector2.Zero, TextureManager.GetTexture(type))
+        public Tile(Vector2 position, TileType type) :
+            base(position, Vector2.Zero, Vector2.Zero, Vector2.Zero, Vector2.Zero, 
+            Vector2.Zero, TextureManager.GetTexture(type))
         {
             this.type = type;
         }
@@ -26,9 +27,14 @@ namespace CrashNet.Worlds
         {
             return TextureManager.GetColors(type);
         }
+
+        public TileType GetTileType()
+        {
+            return type;
+        }
     }
 
-    enum Tiletype
+    enum TileType
     {
         Ground,
         Wall

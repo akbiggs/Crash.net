@@ -62,24 +62,24 @@ namespace CrashNet
         /// </summary>
         /// <param name="tiletype">The type of tile to get the texture of.</param>
         /// <returns>The requested texture.</returns>
-        public static Texture2D GetTexture(Worlds.Tiletype tiletype)
+        public static Texture2D GetTexture(Worlds.TileType tiletype)
         {
             return GetTexture(GetTextureName(tiletype));
         }
 
-        internal static String GetTextureName(Worlds.Tiletype tiletype)
+        internal static String GetTextureName(Worlds.TileType tiletype)
         {
             switch (tiletype)
             {
-                case Worlds.Tiletype.Ground:
+                case Worlds.TileType.Ground:
                 default:
                     return TextureNames.GROUND;
-                case Worlds.Tiletype.Wall:
+                case Worlds.TileType.Wall:
                     return TextureNames.WALL;
             }
         }
 
-        public static Color[,] GetColors(Worlds.Tiletype tiletype)
+        public static Color[,] GetColors(Worlds.TileType tiletype)
         {
             return GetColors(GetTextureName(tiletype));
         }
@@ -119,7 +119,7 @@ namespace CrashNet
     //stores constants for texture names
     static class TextureNames
     {
-        public const string PLAYER_ONE_IDLE = "player_one";
+        public const string PLAYER_ONE_IDLE = "enemy";
         public const string PLAYER_TWO_IDLE = "player_two";
         public const string ENEMY = "enemy";
         public const string GROUND = "ground";

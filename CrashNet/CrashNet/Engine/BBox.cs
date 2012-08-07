@@ -19,6 +19,49 @@ namespace CrashNet.Engine
             this.Height = height;
         }
 
+        public BBox(Rectangle area) 
+        {
+            box = area;
+
+            this.Position = new Vector2(area.X, area.Y);
+            this.Width = area.Width;
+            this.Height = area.Height;
+        }
+
+        public bool IsEmpty()
+        {
+            return GetArea() == 0;
+        }
+
+        public int GetArea()
+        {
+            return box.Width * box.Height;
+        }
+
+        public BBox Intersect(BBox other)
+        {
+            return new BBox(Rectangle.Intersect(box, other.box));
+        }
+
+        public int Top()
+        {
+            return box.Top;
+        }
+
+        public int Bottom()
+        {
+            return box.Bottom;
+        }
+
+        public int Left()
+        {
+            return box.Left;
+        }
+
+        public int Right()
+        {
+            return box.Right;
+        }
 
         public Vector2 Position {
             get { return new Vector2(box.X, box.Y); }
