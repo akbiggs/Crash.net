@@ -269,8 +269,8 @@ namespace CrashNet.Worlds
             float colSpan = GetColSpan(obj);
             float rowSpan = GetRowSpan(obj);
 
-            for (int x = (int)tileCoords.X - 1; x <= tileCoords.X + rowSpan + 1; x++)
-                for (int y = (int)tileCoords.Y - 1; y <= tileCoords.Y + colSpan + 1; y++)
+            for (int x = (int)tileCoords.X; x <= tileCoords.X + rowSpan; x++)
+                for (int y = (int)tileCoords.Y; y <= tileCoords.Y + colSpan; y++)
                     if (WallAt(x, y))
                         intersects.Add(tiles[x, y]);
 
