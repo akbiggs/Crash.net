@@ -87,22 +87,10 @@ namespace CrashNet.Worlds
                 obj.Update();
                 KeepInBounds(obj);
 
-                //// calculate all the corrections from tile collisions to the object's
-                //// position, sum them to get the actual new position.
-                //List<Vector2> corrections = new List<Vector2>();
-                //foreach (Tile tile in tiles)
-                //{
-                //    Vector2 correction = Collide(obj, tile);
-                //    if (correction != Vector2.Zero) corrections.Add(correction);
-                //};
-                //foreach (float x in GetDistinctXValues(corrections))
-                //    obj.Position = new Vector2(obj.Position.X + x, obj.Position.Y);
-                //foreach (float y in GetDistinctYValues(corrections))
-                //    obj.Position = new Vector2(obj.Position.X, obj.Position.Y + y);
-
-                foreach (GameObject other in objects.Where(x => x != obj))
+                foreach (GameObject other in objects)
                 {
-                    Collide(obj, other);
+                    if (other != obj) 
+                        Collide(obj, other);
                 }        
             }
         }
@@ -199,35 +187,7 @@ namespace CrashNet.Worlds
 
         private void KeepInBounds(GameObject obj)
         {
-            // figure out the change to force in the object's x-position to keep it in bounds.
-            List<float> xBounds = GetXBounds(obj);
-            float boundedX = MathHelper.Clamp(obj.Position.X, xBounds.Min(), xBounds.Max());
-            float changeX = Math.Abs(boundedX - obj.Position.X);
-
-            // figure out the change to force in the object's y-position to keep it in bounds.
-            List<float> yBounds = GetYBounds(obj);
-            float boundedY = MathHelper.Clamp(obj.Position.Y, yBounds.Min(), yBounds.Max());
-            float changeY = MathHelper.Distance(boundedY, obj.Position.Y);
             
-            // make the smaller of the two changes, then recalculate the other one.
-            // if they're equal, make the change that pushes the object outside the wall first.
-            // TODO: make this algorithm not suck.
-            if (changeY > changeX || (WallAtPixel(obj.Position.X, boundedY)))
-            {
-                obj.Position = new Vector2(boundedX, obj.Position.Y);
-
-                yBounds = GetYBounds(obj);
-                boundedY = MathHelper.Clamp(obj.Position.Y, yBounds.Min(), yBounds.Max());
-                obj.Position = new Vector2(boundedX, boundedY);
-            }
-            else
-            {
-                obj.Position = new Vector2(obj.Position.X, boundedY);
-
-                xBounds = GetXBounds(obj);
-                boundedX = MathHelper.Clamp(obj.Position.X, xBounds.Min(), xBounds.Max());
-                obj.Position = new Vector2(boundedX, boundedY);
-            }
         }
 
         private List<float> GetXBounds(GameObject obj)
