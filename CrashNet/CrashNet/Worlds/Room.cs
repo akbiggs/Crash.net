@@ -20,12 +20,17 @@ namespace CrashNet.Worlds
         /// <summary>
         /// How much distance to keep objects away from walls.
         /// </summary>
-        const float WALL_PADDING = 0.01f;
+        const float WALL_PADDING = 0.1f;
 
         /// <summary>
         /// All the objects in the room.
         /// </summary>
         List<GameObject> objects;
+
+        /// <summary>
+        /// All of the objects that want to leave the room.
+        /// </summary>
+        Dictionary<Direction, List<GameObject>> wantingToLeave;
 
         /// <summary>
         /// All the tiles in the room.
@@ -56,6 +61,11 @@ namespace CrashNet.Worlds
             this.Height = height;
 
             this.objects = new List<GameObject>();
+            
+            // initialize the log of objects that want to leave the room
+            this.wantingToLeave = new Dictionary<Direction, List<GameObject>>();
+            foreach (Direction direction in Enum.GetValues(typeof(Direction)))
+                wantingToLeave[direction] = new List<GameObject>();
 
             tiles = new Tile[Width, Height];
             for (int col = 0; col < Width; col++)
@@ -67,7 +77,7 @@ namespace CrashNet.Worlds
         /// Gets the width of the room in pixels.
         /// </summary>
         /// <returns>The width of the room in pixels.</returns>
-        private int GetWidthInPixels()
+        public int GetWidthInPixels()
         {
             return Width * TILESIZE;
         }
@@ -76,7 +86,7 @@ namespace CrashNet.Worlds
         /// Gets the height of the room in pixels.
         /// </summary>
         /// <returns>The height of the room in pixels.</returns>
-        private int GetHeightInPixels()
+        public int GetHeightInPixels()
         {
             return Height * TILESIZE;
         }
@@ -106,9 +116,17 @@ namespace CrashNet.Worlds
 
             foreach (GameObject obj in objects)
             {
+                // update and keep in boundaries of stage
                 obj.Update(this);
                 KeepInBounds(obj);
 
+                // check if the object wants to leave the room,
+                // update our leaving tracker if it does.
+                Direction leavingDirection;
+                if (AtEdge(obj, out leavingDirection))
+                    wantingToLeave[leavingDirection].Add(obj);
+
+                // collide with any other objects in the room
                 foreach (GameObject other in objects)
                 {
                     BBox region;
@@ -157,14 +175,19 @@ namespace CrashNet.Worlds
             objects.Add(obj);
         }
 
+        public void Remove(GameObject obj)
+        {
+            objects.Remove(obj);
+        }
+
         /// <summary>
         /// Keeps the given object within the boundaries of the room.
         /// </summary>
         /// <param name="obj">The object to keep in bounds.</param>
-        private void KeepInBounds(GameObject obj)
+        public void KeepInBounds(GameObject obj)
         {
             obj.Position = Vector2.Clamp(obj.Position, Vector2.Zero,
-                new Vector2(GetWidthInPixels(), GetHeightInPixels()));
+                new Vector2(GetWidthInPixels() - obj.BBox.Width - 1, GetHeightInPixels() - obj.BBox.Height - 1));
         }
 
         /// <summary>
@@ -214,6 +237,39 @@ namespace CrashNet.Worlds
                 direction = Direction.South;
 
             return direction != Direction.None;
+        }
+
+        public void Leave()
+        {
+            RemovePlayers();
+        }
+
+        public bool ShouldLeave(out Direction direction)
+        {
+            foreach (KeyValuePair<Direction, List<GameObject>> pair in wantingToLeave) {
+                // if the players are both trying to leave in the same direction,
+                // leave in that direction.
+                // TODO: make this subset checking thing into a helper method in a separate
+                // class.
+                if (!GetPlayers().Cast<GameObject>().Except(pair.Value).Any())
+                {
+                    direction = pair.Key;
+                    return true;
+                }
+            }
+
+            direction = Direction.None;
+            return false;
+        }
+
+        public List<Player> GetPlayers()
+        {
+            return objects.Where(x => x is Player).Cast<Player>().ToList();
+        }
+
+        private void RemovePlayers()
+        {
+            objects = objects.Where(x => !(x is Player)).ToList();
         }
 
         #region Tile Operations

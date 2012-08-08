@@ -12,6 +12,12 @@ namespace CrashNet
     class World
     {
         /// <summary>
+        /// How far objects should be pushed away from entrances to the room
+        /// upon entering the room. 
+        /// </summary>
+        float ENTRANCE_PADDING = 50f;
+
+        /// <summary>
         /// All the rooms in the world.
         /// </summary>
         Room[,] rooms;
@@ -47,7 +53,7 @@ namespace CrashNet
             rooms = new Room[Width, Height];
             for (int x = 0; x < Width; x++)
                 for (int y = 0; y < Height; y++)
-                    rooms[x, y] = new Room(32, 32);
+                    rooms[x, y] = new Room(20, 20);
 
             roomCoords = GetStartRoomCoords();
             curRoom = rooms[(int)roomCoords.X, (int)roomCoords.Y];
@@ -80,6 +86,49 @@ namespace CrashNet
         internal void Update()
         {
             curRoom.Update();
+            Direction leavingDirection;
+            if (curRoom.ShouldLeave(out leavingDirection))
+            {
+                // remove the players from the current room, put them in the next room
+                // TODO: put them in the proper position in the new room.
+                Room nextRoom = GetNextRoom(leavingDirection, out roomCoords);
+                foreach (Player player in curRoom.GetPlayers())
+                {
+                    player.Position = GetNextStartPosition(player, leavingDirection);
+                    nextRoom.Add(player);
+                }
+                curRoom.Leave();
+
+                curRoom = nextRoom;
+            }
+        }
+
+        /// <summary>
+        /// Gets the next start position of an object in a room,
+        /// given its entering direction.
+        /// </summary>
+        /// <param name="obj">An object entering a new room.</param>
+        /// <param name="direction">The direction the object is entering the room from.</param>
+        /// <returns>The starting position of the object in the room.</returns>
+        private Vector2 GetNextStartPosition(GameObject obj, Direction direction)
+        {
+            float newXPos = obj.Position.X, newYPos = obj.Position.Y;
+
+            if (DirectionOperations.IsHorizontal(direction))
+            {
+                // start it at the opposite end of the room
+                newXPos = MathHelper.Distance(obj.Position.X, curRoom.GetWidthInPixels());
+                // pad the object away from entrance to prevent them from exiting immediately
+                newXPos += (newXPos <= curRoom.GetWidthInPixels() / 2) ? ENTRANCE_PADDING : -ENTRANCE_PADDING;
+            }
+
+            if (DirectionOperations.IsVertical(direction))
+            {
+                newYPos = MathHelper.Distance(obj.Position.Y, curRoom.GetHeightInPixels());
+                newYPos += (newYPos <= curRoom.GetHeightInPixels() / 2) ? ENTRANCE_PADDING : -ENTRANCE_PADDING;
+            }
+
+            return new Vector2(newXPos, newYPos);
         }
 
         internal void Draw(Microsoft.Xna.Framework.Graphics.SpriteBatch spriteBatch)
@@ -91,30 +140,11 @@ namespace CrashNet
                 new Vector2(10, 10), Color.White);
         }
 
-        private Room GetNextRoom(Direction direction)
+        private Room GetNextRoom(Direction direction, out Vector2 nextCoords)
         {
-            switch (direction)
-            {
-                case Direction.None:
-                default:
-                    return curRoom;
-                case Direction.North:
-                    return rooms[(int)roomCoords.X, (int)roomCoords.Y - 1];
-                case Direction.NorthWest:
-                    return rooms[(int)roomCoords.X - 1, (int)roomCoords.Y - 1];
-                case Direction.West:
-                    return rooms[(int)roomCoords.X - 1, (int)roomCoords.Y];
-                case Direction.SouthWest:
-                    return rooms[(int)roomCoords.X - 1, (int)roomCoords.Y + 1];
-                case Direction.South:
-                    return rooms[(int)roomCoords.X, (int)roomCoords.Y + 1];
-                case Direction.SouthEast:
-                    return rooms[(int)roomCoords.X + 1, (int)roomCoords.Y + 1];
-                case Direction.East:
-                    return rooms[(int)roomCoords.X + 1, (int)roomCoords.Y];
-                case Direction.NorthEast:
-                    return rooms[(int)roomCoords.X + 1, (int)roomCoords.Y - 1];
-            }
+            Vector2 change = DirectionOperations.ToVector(direction);
+            nextCoords = Vector2.Add(roomCoords, change);
+            return rooms[(int)nextCoords.X, (int)nextCoords.Y];
         }
     }
 
