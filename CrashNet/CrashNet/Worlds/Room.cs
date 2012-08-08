@@ -61,16 +61,23 @@ namespace CrashNet.Worlds
             this.Height = height;
 
             this.objects = new List<GameObject>();
+            InitializeLeavingObjects();
             
-            // initialize the log of objects that want to leave the room
-            this.wantingToLeave = new Dictionary<Direction, List<GameObject>>();
-            foreach (Direction direction in Enum.GetValues(typeof(Direction)))
-                wantingToLeave[direction] = new List<GameObject>();
 
             tiles = new Tile[Width, Height];
             for (int col = 0; col < Width; col++)
                 for (int row = 0; row < Height; row++)
                     SetTile(col, row, new Tile(new Vector2(col * TILESIZE, row * TILESIZE), TileType.Ground));
+        }
+
+        /// <summary>
+        /// Initializes the list of objects wanting to leave the room.
+        /// </summary>
+        private void InitializeLeavingObjects()
+        {
+            this.wantingToLeave = new Dictionary<Direction, List<GameObject>>();
+            foreach (Direction direction in Enum.GetValues(typeof(Direction)))
+                wantingToLeave[direction] = new List<GameObject>();
         }
 
         /// <summary>
@@ -239,8 +246,12 @@ namespace CrashNet.Worlds
             return direction != Direction.None;
         }
 
+        /// <summary>
+        /// 
+        /// </summary>
         public void Leave()
         {
+            InitializeLeavingObjects();
             RemovePlayers();
         }
 
