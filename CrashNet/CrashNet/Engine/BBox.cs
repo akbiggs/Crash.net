@@ -121,6 +121,8 @@ namespace CrashNet.Engine
 
         public int Right { get { return box.Right; } }
 
+        public Point Center { get { return box.Center; } }
+
         public Vector2 Position {
             get { return new Vector2(box.X, box.Y); }
             set

@@ -6,6 +6,7 @@ using Microsoft.Xna.Framework.Graphics;
 using Microsoft.Xna.Framework;
 using CrashNet.GameObjects;
 using CrashNet.Engine;
+using System.Timers;
 
 namespace CrashNet.Worlds
 {
@@ -162,7 +163,7 @@ namespace CrashNet.Worlds
         /// <param name="obj">The object to keep in bounds.</param>
         private void KeepInBounds(GameObject obj)
         {
-            obj.Position = Vector2.Clamp(obj.Position, Vector2.Zero, 
+            obj.Position = Vector2.Clamp(obj.Position, Vector2.Zero,
                 new Vector2(GetWidthInPixels(), GetHeightInPixels()));
         }
 
@@ -186,6 +187,33 @@ namespace CrashNet.Worlds
         private int GetRowSpan(GameObject obj)
         {
             return (int)(((obj.BBox.X % TILESIZE) + obj.BBox.Width) / TILESIZE);
+        }
+
+        private bool AtEdge(GameObject obj, out Direction direction)
+        {
+            // use the center of the object's bounding box as the telltale point of whether or not
+            // the object is at the edge.
+            Vector2 coords = GetTileCoordsByPixel(new Vector2(obj.BBox.Center.X, obj.BBox.Center.Y));
+            direction = Direction.None;
+
+            if (coords.X == 0 && coords.Y == 0)
+                direction = Direction.NorthWest;
+            else if (coords.X == Width - 1 && coords.Y == 0)
+                direction = Direction.NorthEast;
+            else if (coords.X == 0 && coords.Y == Height - 1)
+                direction = Direction.SouthWest;
+            else if (coords.X == Width - 1 && coords.Y == Height - 1)
+                direction = Direction.SouthEast;
+            else if (coords.X == 0)
+                direction = Direction.West;
+            else if (coords.X == Width - 1)
+                direction = Direction.East;
+            else if (coords.Y == 0)
+                direction = Direction.North;
+            else if (coords.Y == Height - 1)
+                direction = Direction.South;
+
+            return direction != Direction.None;
         }
 
         #region Tile Operations

@@ -81,6 +81,9 @@ namespace CrashNet.GameObjects
             }
         }
 
+        /// <summary>
+        /// Kills the player.
+        /// </summary>
         private void Die()
         {
             IsAlive = false;
