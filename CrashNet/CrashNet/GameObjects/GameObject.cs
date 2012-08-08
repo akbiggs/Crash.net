@@ -76,11 +76,10 @@ namespace CrashNet.GameObjects
             this.rotationSpeed = rotationSpeed;
         }
 
-        internal virtual void Update()
-        {
-            if (ShouldRotate()) Rotate();
-        }
-
+        /// <summary>
+        /// Updates the object in the context of the given room.
+        /// </summary>
+        /// <param name="room">The room in which the object is located.</param>
         internal virtual void Update(Room room)
         {
             if (ShouldRotate()) Rotate();
@@ -91,31 +90,6 @@ namespace CrashNet.GameObjects
             spriteBatch.Draw(Texture, 
                 new Rectangle((int)(Position.X + origin.X), (int)(Position.Y + origin.Y), Texture.Width, Texture.Height), 
                 null, Color.White, rotation, origin, SpriteEffects.None, 0);
-        }
-
-        /// <summary>
-        /// Moves the object.
-        /// </summary>
-        /// <param name="direction">The direction in which to move the object.</param>
-        internal virtual void Move(Direction direction)
-        {
-            float xComponent, yComponent;
-            if (direction == Direction.None)
-                xComponent = yComponent = 0;
-            else
-            {
-                float angle = (float)DirectionToRadians(direction);
-                RotateTo(angle);
-
-                // There's this weird arithmetic bug where these produce very small values during movements along
-                // the opposite axes, so round them.
-                xComponent = (float)(acceleration.X * Math.Round(Math.Sin(angle), 6));
-                // up is negative, down is positive, so multiply by -1. 
-                yComponent = (float)(-1 * acceleration.Y * Math.Round(Math.Cos(angle), 6));
-                
-            }
-            ChangeVelocity(new Vector2(xComponent, yComponent));
-            Position = Vector2.Add(position, Velocity);
         }
 
         /// <summary>
@@ -149,6 +123,42 @@ namespace CrashNet.GameObjects
                 ChangeYPosition(Velocity.Y, room);
         }
 
+        /// <summary>
+        /// Changes the x-position of the object. Collides with any walls
+        /// in the given room.
+        /// </summary>
+        /// <param name="amount">The amount to change the position by. Negative means left,
+        /// positive means right.</param>
+        /// <param name="room">The room in which the object is located. Movement will collide against
+        /// walls.</param>
+        private void ChangeXPosition(float amount, Room room)
+        {
+            // 1. change the x-pos.
+            // 2. round to prevent jittering in some situations
+            // 3. go through each intersection, and fix it.
+            // Thanks to David Gouveia http://gamedev.stackexchange.com/users/11686/david-gouveia
+            Position = new Vector2((float)Math.Round(Position.X + amount), Position.Y);
+            List<Tile> collidingWalls = room.GetIntersectingWalls(this);
+
+            foreach (Tile tile in collidingWalls)
+            {
+                float depth = BBox.GetHorizontalIntersectionDepth(BBox, tile.BBox);
+                if (depth != 0)
+                {
+                    Velocity.X = 0;
+                    Position = new Vector2(Position.X + depth + (WALL_PADDING * Math.Sign(depth)), Position.Y);
+                }
+            }
+        }
+
+        /// <summary>
+        /// Changes the y-position of the object. Collides with any walls
+        /// in the given room.
+        /// </summary>
+        /// <param name="amount">The amount to change the position by. Negative means up,
+        /// positive means down.</param>
+        /// <param name="room">The room in which the object is located. Movement will collide against
+        /// walls.</param>
         private void ChangeYPosition(float amount, Room room)
         {
             // 1. change the y-pos.
@@ -166,26 +176,6 @@ namespace CrashNet.GameObjects
                 {
                     Velocity.Y = 0;
                     Position = new Vector2(Position.X, Position.Y + depth + (WALL_PADDING * Math.Sign(depth)));
-                }
-            }
-        }
-
-        private void ChangeXPosition(float amount, Room room)
-        {
-            // 1. change the x-pos.
-            // 2. round to prevent jittering in some situations
-            // 3. go through each intersection, and fix it.
-            // Thanks to David Gouveia http://gamedev.stackexchange.com/users/11686/david-gouveia
-            Position = new Vector2((float)Math.Round(Position.X + amount), Position.Y);
-            List<Tile> collidingWalls = room.GetIntersectingWalls(this);
-
-            foreach (Tile tile in collidingWalls)
-            {
-                float depth = BBox.GetHorizontalIntersectionDepth(BBox, tile.BBox);
-                if (depth != 0)
-                {
-                    Velocity.X = 0;
-                    Position = new Vector2(Position.X + depth + (WALL_PADDING * Math.Sign(depth)), Position.Y);
                 }
             }
         }
@@ -317,15 +307,10 @@ namespace CrashNet.GameObjects
             }
         }
 
-        /// <summary>
-        /// Get the collision between this and another object, as another bounded box.
-        /// </summary>
-        /// <param name="other">The object being collided with.</param>
-        /// <returns>The collision between the two objects, or BBox.Empty if there is no
-        /// collision.</returns>
-        public BBox GetCollision(GameObject other)
+        public bool ShouldCollide(GameObject other, out BBox region)
         {
-            return BBox.Intersect(other.BBox);
+            region = BBox.Intersect(other.BBox);
+            return !region.IsEmpty();
         }
 
         /// <summary>
@@ -334,37 +319,8 @@ namespace CrashNet.GameObjects
         /// </summary>
         /// <param name="other">The other object being collided with.</param>
         /// <param name="region">The region of collision.</param>
-        /// <returns>The correction to this object's position.</returns>
-        public virtual Vector2 ResolveCollision(GameObject other, BBox region) {
-            if (other is Tile) return ResolveCollision((Tile)other, region);
-            return Vector2.Zero;
-        }
+        public virtual void Collide(GameObject other, BBox region) {
 
-        /// <summary>
-        /// Resolves the collision in a region between this object
-        /// and a tile.
-        /// </summary>
-        /// <param name="tile">The tile being collided with.</param>
-        /// <param name="region">The region of collision.</param>
-        /// <returns>The correction to this object's position.</returns>
-        public virtual Vector2 ResolveCollision(Tile tile, BBox region) {
-            Vector2 correction = Vector2.Zero;
-            if (tile.GetTileType() == TileType.Wall)
-            {
-                // push the object outside the boundaries of the wall
-                if (region.Position.X >= tile.Position.X + tile.Texture.Width / 2)
-                    correction = new Vector2(region.Width, correction.Y);
-                else correction = new Vector2(-region.Width, correction.Y);
-
-                if (region.Position.Y >= tile.Position.Y + tile.Texture.Height / 2)
-                    correction = new Vector2(correction.X, region.Height);
-                else correction = new Vector2(correction.X, -region.Height);
-
-                // push the object to the greater of the two coordinates, if they're equal push to both
-                //if () correction = new Vector2(correction.X, 0);
-                //else if () correction = new Vector2(0, correction.Y);
-            }
-            return correction;
         }
 
         /// <summary>

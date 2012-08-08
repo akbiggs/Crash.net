@@ -54,33 +54,6 @@ namespace CrashNet.GameObjects
             }
         }
 
-        internal override void Update()
-        {
-            if (IsAlive)
-            {
-                if (Input.IsKeyDown(Up) && Input.IsKeyDown(Left))
-                    Move(Direction.NorthWest);
-                else if (Input.IsKeyDown(Up) && Input.IsKeyDown(Right))
-                    Move(Direction.NorthEast);
-                else if (Input.IsKeyDown(Down) && Input.IsKeyDown(Left))
-                    Move(Direction.SouthWest);
-                else if (Input.IsKeyDown(Down) && Input.IsKeyDown(Right))
-                    Move(Direction.SouthEast);
-                else if (Input.IsKeyDown(Left))
-                    Move(Direction.West);
-                else if (Input.IsKeyDown(Right))
-                    Move(Direction.East);
-                else if (Input.IsKeyDown(Up))
-                    Move(Direction.North);
-                else if (Input.IsKeyDown(Down))
-                    Move(Direction.South);
-                else
-                    Move(Direction.None);
-
-                base.Update();
-            }
-        }
-
         internal override void Update(Room room)
         {
             if (IsAlive)
@@ -104,7 +77,7 @@ namespace CrashNet.GameObjects
                 else
                     Move(Direction.None, room);
 
-                base.Update();
+                base.Update(room);
             }
         }
 

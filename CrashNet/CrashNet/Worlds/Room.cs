@@ -62,7 +62,28 @@ namespace CrashNet.Worlds
                     SetTile(col, row, new Tile(new Vector2(col * TILESIZE, row * TILESIZE), TileType.Ground));
         }
 
-        internal void Update()
+        /// <summary>
+        /// Gets the width of the room in pixels.
+        /// </summary>
+        /// <returns>The width of the room in pixels.</returns>
+        private int GetWidthInPixels()
+        {
+            return Width * TILESIZE;
+        }
+
+        /// <summary>
+        /// Gets the height of the room in pixels.
+        /// </summary>
+        /// <returns>The height of the room in pixels.</returns>
+        private int GetHeightInPixels()
+        {
+            return Height * TILESIZE;
+        }
+
+        /// <summary>
+        /// Updates the room.
+        /// </summary>
+        internal virtual void Update()
         {
             #region LEVEL EDITOR
             if (Input.MouseLeftButtonDown)
@@ -80,7 +101,7 @@ namespace CrashNet.Worlds
             #endregion
 
             foreach (Tile tile in tiles)
-                tile.Update();
+                tile.Update(this);
 
             foreach (GameObject obj in objects)
             {
@@ -89,38 +110,11 @@ namespace CrashNet.Worlds
 
                 foreach (GameObject other in objects)
                 {
-                    if (obj != other) 
-                        Collide(obj, other);
+                    BBox region;
+                    if (obj != other && obj.ShouldCollide(other, out region))
+                        obj.Collide(other, region);
                 }        
             }
-        }
-
-        private IEnumerable<float> GetDistinctXValues(List<Vector2> corrections)
-        {
-            return corrections.Select(x => x.X).Distinct();
-        }
-
-        private IEnumerable<float> GetDistinctYValues(List<Vector2> corrections)
-        {
-            return corrections.Select(x => x.Y).Distinct();
-        }
-
-        /// <summary>
-        /// Collides the given game object with the other game object.
-        /// </summary>
-        /// <param name="obj">The object colliding.</param>
-        /// <param name="other">The object being collided against.</param>
-        /// <returns>The new position of the colliding object after the collision.</returns>
-        private Vector2 Collide(GameObject obj, GameObject other)
-        {
-            BBox region = obj.GetCollision(other);
-            Vector2 newPos = Vector2.Zero;
-            if (!region.IsEmpty())
-            {
-                newPos = obj.ResolveCollision(other, region);
-            }
-
-            return newPos;
         }
 
         internal void Draw(SpriteBatch spriteBatch)
@@ -132,6 +126,69 @@ namespace CrashNet.Worlds
             foreach (GameObject obj in objects)
                 obj.Draw(spriteBatch);
         }
+
+        /// <summary>
+        /// Check whether or not the given column is in bounds.
+        /// </summary>
+        /// <param name="col">The column to check, 0-indexed.</param>
+        /// <returns>True if the column is in bounds, false otherwise.</returns>
+        private bool ValidCol(int col)
+        {
+            return col >= 0 && col < Width;
+        }
+
+        /// <summary>
+        /// Check whether or not the given row is in bounds.
+        /// </summary>
+        /// <param name="row">The row to check, 0-indexed.</param>
+        /// <returns>True if the row is in bounds, false otherwise.</returns>
+        private bool ValidRow(int row)
+        {
+            return row >= 0 && row < Height;
+        }
+
+        /// <summary>
+        /// Adds the given object to the room.
+        /// </summary>
+        /// <param name="obj">The object to be put in the room.</param>
+        public void Add(GameObject obj)
+        {
+            objects.Add(obj);
+        }
+
+        /// <summary>
+        /// Keeps the given object within the boundaries of the room.
+        /// </summary>
+        /// <param name="obj">The object to keep in bounds.</param>
+        private void KeepInBounds(GameObject obj)
+        {
+            obj.Position = Vector2.Clamp(obj.Position, Vector2.Zero, 
+                new Vector2(GetWidthInPixels(), GetHeightInPixels()));
+        }
+
+        /// <summary>
+        /// Get the number of columns that the given object spans over.
+        /// </summary>
+        /// <param name="obj">An object in the room.</param>
+        /// <returns>The number of columns that the object spans over, starting at 0 if the object is
+        /// confined to 1 tile.</returns>
+        private int GetColSpan(GameObject obj)
+        {
+            return (int)(((obj.BBox.Y % TILESIZE) + obj.BBox.Height) / TILESIZE);
+        }
+
+        /// <summary>
+        /// Get the number of rows that the given object spans over.
+        /// </summary>
+        /// <param name="obj">An object in the room.</param>
+        /// <returns>The number of rows that the object spans over, starting at 0 if the object is
+        /// confined to 1 tile.</returns>
+        private int GetRowSpan(GameObject obj)
+        {
+            return (int)(((obj.BBox.X % TILESIZE) + obj.BBox.Width) / TILESIZE);
+        }
+
+        #region Tile Operations
 
         /// <summary>
         /// Sets the tile at the given coordinates to the given tile.
@@ -165,52 +222,48 @@ namespace CrashNet.Worlds
             }
         }
 
-
-        private bool ValidCol(int col)
+        /// <summary>
+        /// Gets the coordinates of a tile by a pixel.
+        /// </summary>
+        /// <param name="pixel"></param>
+        /// <returns></returns>
+        private Vector2 GetTileCoordsByPixel(Vector2 pixel)
         {
-            return col >= 0 && col < Width;
-        }
-
-        private bool ValidRow(int row)
-        {
-            return row >= 0 && row < Height;
+            return GetTileCoordsByPixel(pixel.X, pixel.Y);
         }
 
         /// <summary>
-        /// Adds the given object to the room.
+        /// Gets a tile by a pixel.
         /// </summary>
-        /// <param name="obj">The object to be put in the room.</param>
-        public void Add(GameObject obj)
+        /// <param name="pixel">A coordinate on the game.</param>
+        /// <returns>The tile at that coordinate.</returns>
+        private Tile GetTileByPixel(Vector2 pixel)
         {
-            objects.Add(obj);
-        }
-
-        private void KeepInBounds(GameObject obj)
-        {
-            obj.Position = Vector2.Clamp(obj.Position, Vector2.Zero, 
-                new Vector2(GetWidthInPixels(), GetHeightInPixels()));
+            return GetTileByPixel(pixel.X, pixel.Y);
         }
 
         /// <summary>
-        /// Get the number of columns that the given object spans over.
+        /// Gets a tile by a pixel.
         /// </summary>
-        /// <param name="obj">An object in the room.</param>
-        /// <returns>The number of columns that the object spans over, starting at 0 if the object is
-        /// confined to 1 tile.</returns>
-        private int GetColSpan(GameObject obj)
+        /// <param name="x">The x-coordinate of the pixel.</param>
+        /// <param name="y">The y-coordinate of the pixel.</param>
+        /// <returns>The tile at the given coordinates.</returns>
+        private Tile GetTileByPixel(float x, float y)
         {
-            return (int)(((obj.BBox.Y % TILESIZE) + obj.BBox.Height) / TILESIZE);
+            Vector2 tileCoords = GetTileCoordsByPixel(x, y);
+            return tiles[(int)tileCoords.X, (int)tileCoords.Y];
         }
 
         /// <summary>
-        /// Get the number of rows that the given object spans over.
+        /// Gets the column-row coordinates of a tile by a pixel.
         /// </summary>
-        /// <param name="obj">An object in the room.</param>
-        /// <returns>The number of rows that the object spans over, starting at 0 if the object is
-        /// confined to 1 tile.</returns>
-        private int GetRowSpan(GameObject obj)
+        /// <param name="x">The x-coordinate of the pixel.</param>
+        /// <param name="y">The y-coordinate of the pixel.</param>
+        /// <returns>The column-row coordinates of the tile at the 
+        /// given coordinates.</returns>
+        private Vector2 GetTileCoordsByPixel(float x, float y)
         {
-            return (int)(((obj.BBox.X % TILESIZE) + obj.BBox.Width) / TILESIZE);
+            return new Vector2((int)(x / TILESIZE), (int)(y / TILESIZE));
         }
 
         /// <summary>
@@ -235,10 +288,10 @@ namespace CrashNet.Worlds
         }
 
         /// <summary>
-        /// Returns whether or not there is a wall at the given row-column.
+        /// Returns whether or not there is a wall at the given column and row.
         /// </summary>
-        /// <param name="row">The row of the tile.</param>
-        /// <param name="col">The column of the tile.</param>
+        /// <param name="row">The row of the tile, 0-indexed.</param>
+        /// <param name="col">The column of the tile, 0-indexed.</param>
         /// <returns>True if there is a wall at the given row/column, false otherwise.</returns>
         private bool WallAt(int col, int row)
         {
@@ -246,15 +299,15 @@ namespace CrashNet.Worlds
         }
 
         /// <summary>
-        /// Return whether or not a wall overlaps the given box.
+        /// Return whether or not a wall overlaps the given object.
         /// </summary>
         /// <param name="box">The bounding box that might be overlapping a wall.</param>
         /// <returns>True if the box overlaps a wall, false otherwise.</returns>
-        private bool WallIntersects(BBox box)
+        private bool WallIntersects(GameObject obj)
         {
             // TODO: check every tile that the box overlaps, not just the corners.
-            return (WallAtPixel(box.Left, box.Top) || WallAtPixel(box.Right, box.Top) ||
-                WallAtPixel(box.Left, box.Bottom) || WallAtPixel(box.Right, box.Bottom));
+            return WallAtPixel(obj.BBox.Left, obj.BBox.Top) || WallAtPixel(obj.BBox.Right, obj.BBox.Top) ||
+                WallAtPixel(obj.BBox.Left, obj.BBox.Bottom) || WallAtPixel(obj.BBox.Right, obj.BBox.Bottom);
         }
 
         /// <summary>
@@ -276,28 +329,12 @@ namespace CrashNet.Worlds
 
             return intersects;
         }
+        #endregion
 
-        private Vector2 GetTileCoordsByPixel(Vector2 pixel)
-        {
-            return GetTileCoordsByPixel(pixel.X, pixel.Y);
-        }
-
-        private int GetWidthInPixels()
-        {
-            return Width * TILESIZE;
-        }
-
-        private int GetHeightInPixels()
-        {
-            return Height * TILESIZE;
-        }
-
-        public Texture2D Texture
-        {
-            get { return texture; }
-            set { texture = value; }
-        }
-
+        /// <summary>
+        /// Renders the texture of the room's foreground.
+        /// </summary>
+        /// <param name="graphicsDevice">The graphics device managing the game's graphics.</param>
         public void Render(GraphicsDevice graphicsDevice)
         {
             if (texture == null)
@@ -305,6 +342,12 @@ namespace CrashNet.Worlds
             Render(graphicsDevice, unrenderedRegion);
         }
 
+        /// <summary>
+        /// Renders a region of the texture of the room's foreground.
+        /// Assumes the texture is not null.
+        /// </summary>
+        /// <param name="graphicsDevice">The graphics device managing the game's graphics.</param>
+        /// <param name="region">The region to render.</param>
         public void Render(GraphicsDevice graphicsDevice, Rectangle region)
         {
             Color[] canvas = new Color[region.Width * region.Height];
@@ -326,39 +369,11 @@ namespace CrashNet.Worlds
             unrenderedRegion = Rectangle.Empty;
         }
 
-        private Tile GetTileByPixel(Vector2 pixel)
-        {
-            return GetTileByPixel(pixel.X, pixel.Y);
-        }
-
-        private Tile GetTileByPixel(float x, float y)
-        {
-            Vector2 tileCoords = GetTileCoordsByPixel(x, y);
-            return tiles[(int)tileCoords.X, (int)tileCoords.Y];
-        }
-
-        private Vector2 GetTileCoordsByPixel(float x, float y)
-        {
-            return new Vector2((int)(x / TILESIZE), (int)(y / TILESIZE));
-        }
-
         /// <summary>
-        /// Gets all the coordinates that the object spans.
+        /// Whether or not the room's foreground texture needs to be re-rendered.
         /// </summary>
-        /// <param name="obj">An object in the room.</param>
-        /// <returns>A list of all the tile coordinates that the object spans.</returns>
-        public List<Vector2> GetAllTileCoords(GameObject obj)
-        {
-            List<Vector2> coords = new List<Vector2>();
-            Vector2 start = GetTileCoordsByPixel(obj.Position);
-            Vector2 end = GetTileCoordsByPixel(new Vector2(obj.BBox.Right, obj.BBox.Bottom));
-            for (int x = (int)start.X; x <= end.X; x++)
-                for (int y = (int)start.Y; y <= end.Y; y++)
-                    coords.Add(new Vector2(x, y));
-
-            return coords;
-        }
-
+        /// <returns>True if the foreground needs to be re-rendered, 
+        /// false otherwise.</returns>
         public bool ShouldRender()
         {
             return unrenderedRegion != Rectangle.Empty;
