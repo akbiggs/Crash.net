@@ -94,6 +94,7 @@
     <Compile Include="Engine\Renderable.cs" />
     <Compile Include="Engine\TextureManager.cs" />
     <Compile Include="Interface\UserInterface.cs" />
+    <Compile Include="Worlds\WorldGenerator.cs" />
   </ItemGroup>
   <ItemGroup>
     <Content Include="Game.ico" />

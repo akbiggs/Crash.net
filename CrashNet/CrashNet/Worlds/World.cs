@@ -43,20 +43,40 @@ namespace CrashNet
         /// </summary>
         WorldNumber worldNumber;
 
-        public World(WorldNumber worldNumber)
+        public World(int Width, int Height)
         {
             // TODO: Get the properties that this world should have
             // based on the world number.
-            this.Width = 7;
-            this.Height = 5;
+            this.Width = Width;
+            this.Height = Height;
 
             rooms = new Room[Width, Height];
             for (int x = 0; x < Width; x++)
                 for (int y = 0; y < Height; y++)
-                    rooms[x, y] = new Room(20, 20);
+                {
+                    List<Direction> exits = GetExits(x, y);
+                    rooms[x, y] = new Room(20, 20, exits);
+                }
 
             roomCoords = GetStartRoomCoords();
             curRoom = rooms[(int)roomCoords.X, (int)roomCoords.Y];
+        }
+
+        private List<Direction> GetExits(int x, int y)
+        {
+            List<Direction> exits = new List<Direction>();
+
+            // put exits in all directions unless at edge of world
+            if (x != 0)
+                exits.Add(Direction.West);
+            if (x != Width - 1)
+                exits.Add(Direction.East);
+            if (y != 0)
+                exits.Add(Direction.North);
+            if (y != Height - 1)
+                exits.Add(Direction.South);
+
+            return exits;
         }
 
         private Vector2 GetStartRoomCoords()
@@ -148,11 +168,11 @@ namespace CrashNet
         }
     }
 
-    enum WorldNumber
+    public enum WorldNumber
     {
-        World1,
-        World2,
-        World3,
-        World4
+        One,
+        Two,
+        Three,
+        Four
     }
 }

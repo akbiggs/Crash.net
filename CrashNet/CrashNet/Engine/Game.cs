@@ -75,7 +75,7 @@ namespace CrashNet.Engine
             //initializing here because they are dependent on content managers
             background = new Background(Width, Height, TextureManager.GetTexture(TextureNames.BACKGROUND));
 
-            world = new World(WorldNumber.World1);
+            world = WorldGenerator.Generate(WorldNumber.One);
             world.Add(new Player(PlayerNumber.One, new Vector2(200, 200)));
             world.Add(new Player(PlayerNumber.Two, new Vector2(100, 100)));
 

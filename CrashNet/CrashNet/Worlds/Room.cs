@@ -23,6 +23,11 @@ namespace CrashNet.Worlds
         const float WALL_PADDING = 0.1f;
 
         /// <summary>
+        /// How many tiles should be free next to each exit.
+        /// </summary>
+        const int EXIT_PADDING = 2;
+
+        /// <summary>
         /// All the objects in the room.
         /// </summary>
         List<GameObject> objects;
@@ -55,7 +60,8 @@ namespace CrashNet.Worlds
         /// </summary>
         /// <param name="width">The width of the room in tiles.</param>
         /// <param name="height">The height of the room in tiles.</param>
-        public Room(int width, int height)
+        /// <param name="exits">The directions in which one can exit from the room.</param>
+        public Room(int width, int height, List<Direction> exits)
         {
             this.Width = width;
             this.Height = height;
@@ -63,11 +69,71 @@ namespace CrashNet.Worlds
             this.objects = new List<GameObject>();
             InitializeLeavingObjects();
             
-
             tiles = new Tile[Width, Height];
             for (int col = 0; col < Width; col++)
                 for (int row = 0; row < Height; row++)
-                    SetTile(col, row, new Tile(new Vector2(col * TILESIZE, row * TILESIZE), TileType.Ground));
+                    SetTile(col, row, TileType.Ground);
+
+            SetBorder(exits);
+        }
+
+        /// <summary>
+        /// Generates the border of the room based on the given
+        /// list of exits.
+        /// </summary>
+        /// <param name="exits">The exits from the room.</param>
+        private void SetBorder(List<Direction> exits)
+        {
+            int x, y;
+
+            // TODO: generalize these into a method.
+            // generate north border
+            y = 0;
+            for (x = 0; x < Width; x++)
+                if (MathHelper.Distance(x, 0) <= EXIT_PADDING && exits.Contains(Direction.NorthWest))
+                    SetTile(x, y, TileType.Ground);
+                else if (MathHelper.Distance(x, Width / 2 - 1) <= EXIT_PADDING && exits.Contains(Direction.North))
+                    SetTile(x, y, TileType.Ground);
+                else if (MathHelper.Distance(x, Width - 1) <= EXIT_PADDING && exits.Contains(Direction.NorthEast))
+                    SetTile(x, y, TileType.Ground);
+                else
+                    SetTile(x, y, TileType.Wall);
+
+            // generate south border
+            y = Height - 1;
+            for (x = 0; x < Width; x++)
+                if (MathHelper.Distance(x, 0) <= EXIT_PADDING && exits.Contains(Direction.SouthWest))
+                    SetTile(x, y, TileType.Ground);
+                else if (MathHelper.Distance(x, Width / 2 - 1) <= EXIT_PADDING && exits.Contains(Direction.South))
+                    SetTile(x, y, TileType.Ground);
+                else if (MathHelper.Distance(x, Width - 1) <= EXIT_PADDING && exits.Contains(Direction.SouthEast))
+                    SetTile(x, y, TileType.Ground);
+                else
+                    SetTile(x, y, TileType.Wall);
+
+            // generate west border
+            x = 0;
+            for (y = 0; y < Height; y++)
+                if (MathHelper.Distance(y, 0) <= EXIT_PADDING && exits.Contains(Direction.NorthWest))
+                    SetTile(x, y, TileType.Ground);
+                else if (MathHelper.Distance(y, Height / 2 - 1) <= EXIT_PADDING && exits.Contains(Direction.West))
+                    SetTile(x, y, TileType.Ground);
+                else if (MathHelper.Distance(y, Height - 1) <= EXIT_PADDING && exits.Contains(Direction.SouthWest))
+                    SetTile(x, y, TileType.Ground);
+                else
+                    SetTile(x, y, TileType.Wall);
+ 
+            // generate east border
+            x = Width - 1;
+            for (y = 0; y < Height; y++)
+                if (MathHelper.Distance(y, 0) <= EXIT_PADDING && exits.Contains(Direction.NorthEast))
+                    SetTile(x, y, TileType.Ground);
+                else if (MathHelper.Distance(y, Height / 2 - 1) <= EXIT_PADDING && exits.Contains(Direction.East))
+                    SetTile(x, y, TileType.Ground);
+                else if (MathHelper.Distance(y, Height - 1) <= EXIT_PADDING && exits.Contains(Direction.SouthEast))
+                    SetTile(x, y, TileType.Ground);
+                else
+                    SetTile(x, y, TileType.Wall);
         }
 
         /// <summary>
@@ -108,7 +174,7 @@ namespace CrashNet.Worlds
             {
                 Vector2 mousePos = Input.MousePosition;
                 Vector2 tileCoords = GetTileCoordsByPixel(mousePos.X, mousePos.Y);
-                SetTile((int)tileCoords.X, (int)tileCoords.Y, new Tile(new Vector2(tileCoords.X, tileCoords.Y), TileType.Wall));
+                SetTile((int)tileCoords.X, (int)tileCoords.Y, TileType.Wall);
             }
 
             if (Input.MouseRightButtonDown)
@@ -290,13 +356,13 @@ namespace CrashNet.Worlds
         /// </summary>
         /// <param name="col">The x-coordinate of the new tile, relative to other tiles.</param>
         /// <param name="row">The y-coordinate of the new tile, relative to other tiles.</param>
-        /// <param name="tile">The new tile.</param>
-        private void SetTile(int col, int row, Tile tile)
+        /// <param name="tiletype">The new tile.</param>
+        private void SetTile(int col, int row, TileType tiletype)
         {
+            Tile tile = new Tile(new Vector2(col * TILESIZE, row * TILESIZE), tiletype);
             if (ValidRow(row) && ValidCol(col))
             {
                 if (tiles == null) tiles = new Tile[Width, Height];
-                tile.Position = new Vector2(col * TILESIZE, row * TILESIZE);
                 tiles[col, row] = tile;
 
                 // determine the part of the map that has not been rendered yet,
