@@ -9,7 +9,22 @@ namespace CrashNet.Worlds
 {
     class Tile : GameObject
     {
+        // string representations
+        const string GROUND = "G";
+        const string WALL = "W";
+
         TileType type;
+
+        /// <summary>
+        /// Make a new tile of the given type.
+        /// </summary>
+        /// <param name="type">The type of the tile.</param>
+        public Tile(TileType type) :
+            base(Vector2.Zero, Vector2.Zero, Vector2.Zero, Vector2.Zero, Vector2.Zero,
+            Vector2.Zero, TextureManager.GetTexture(type))
+        {
+            this.type = type;
+        }
 
         /// <summary>
         /// Make a new tile of the given type at the given position.
@@ -31,6 +46,30 @@ namespace CrashNet.Worlds
         public TileType GetTileType()
         {
             return type;
+        }
+
+        public override string ToString()
+        {
+            switch (type)
+            {
+                case TileType.Ground:
+                default:
+                    return GROUND;
+                case TileType.Wall:
+                    return WALL;
+            }
+        }
+
+        public static Tile FromString(string s)
+        {
+            switch (s)
+            {
+                case GROUND:
+                default:
+                    return new Tile(TileType.Ground);
+                case WALL:
+                    return new Tile(TileType.Wall);
+            }
         }
     }
 

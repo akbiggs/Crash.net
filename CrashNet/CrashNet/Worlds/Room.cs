@@ -7,6 +7,9 @@ using Microsoft.Xna.Framework;
 using CrashNet.GameObjects;
 using CrashNet.Engine;
 using System.Timers;
+using Microsoft.Xna.Framework.Input;
+using System.IO;
+
 
 namespace CrashNet.Worlds
 {
@@ -26,6 +29,11 @@ namespace CrashNet.Worlds
         /// How many tiles should be free next to each exit.
         /// </summary>
         const int EXIT_PADDING = 2;
+
+        /// <summary>
+        /// The savename of the room file.
+        /// </summary>
+        const string SAVE_NAME = "Room.csv";
 
         /// <summary>
         /// All the objects in the room.
@@ -54,6 +62,8 @@ namespace CrashNet.Worlds
 
         Texture2D texture = null;
         Rectangle unrenderedRegion = Rectangle.Empty;
+
+        bool editMode = false;
 
         /// <summary>
         /// Makes a new room.
@@ -172,17 +182,27 @@ namespace CrashNet.Worlds
         internal virtual void Update()
         {
             #region LEVEL EDITOR
-            if (Input.MouseLeftButtonDown)
-            {
-                Vector2 mousePos = Input.MousePosition;
-                Vector2 tileCoords = GetTileCoordsByPixel(mousePos.X, mousePos.Y);
-                SetTile((int)tileCoords.X, (int)tileCoords.Y, TileType.Wall);
-            }
 
-            if (Input.MouseRightButtonDown)
+            if (Input.KeyboardTapped(Keys.F1))
+                Save();
+
+            if (Input.KeyboardTapped(Keys.F2))
+                editMode = !editMode;
+
+            if (editMode)
             {
-                Vector2 mousePos = Input.MousePosition;
-                Add(new Player(PlayerNumber.One, mousePos));
+                if (Input.MouseLeftButtonDown)
+                {
+                    Vector2 mousePos = Input.MousePosition;
+                    Vector2 tileCoords = GetTileCoordsByPixel(mousePos.X, mousePos.Y);
+                    SetTile((int)tileCoords.X, (int)tileCoords.Y, TileType.Wall);
+                }
+
+                if (Input.MouseRightButtonDown)
+                {
+                    Vector2 mousePos = Input.MousePosition;
+                    Add(new Player(PlayerNumber.One, mousePos));
+                }
             }
             #endregion
 
@@ -214,8 +234,44 @@ namespace CrashNet.Worlds
                     BBox region;
                     if (obj != other && obj.ShouldCollide(other, out region))
                         obj.Collide(other, region);
-                }        
+                }
             }
+        }
+
+        /// <summary>
+        /// Save this room to a file.
+        /// </summary>
+        private void Save()
+        {
+            // save under the appropriate name in the appropriate directory
+            string saveDir = Directory.GetCurrentDirectory() + "\\..\\..\\..\\Worlds\\Rooms\\";
+            string fileName = SAVE_NAME;
+
+            // go through and write each tile to the comma-separated file
+            StreamWriter writer = new StreamWriter(saveDir + fileName);
+            for (int y = 0; y < Height; y++)
+            {
+                List<string> row = new List<string>();
+                for (int x = 0; x < Width; x++)
+                    row.Add(tiles[x, y].ToString());
+                writer.WriteLine(String.Join(", ", row) + ((y != Height - 1) ? "," : ""));
+            }
+
+            writer.Close();
+        }
+
+        /// <summary>
+        /// Get the filename under which this room should be saved.
+        /// </summary>
+        /// <param name="saveDir">The directory into which the room is being 
+        /// saved.</param>
+        /// <returns>The filename to save the room as.</returns>
+        private string GetSaveName(string saveDir)
+        {
+            String nextName = "Room.csv";
+            while (Directory.EnumerateFiles(saveDir).Contains(nextName))
+                nextName = String.Concat("Room", nextName);
+            return nextName;
         }
 
         internal void Draw(SpriteBatch spriteBatch)
@@ -227,6 +283,11 @@ namespace CrashNet.Worlds
 
             foreach (GameObject obj in objects)
                 obj.Draw(spriteBatch);
+
+            if (editMode)
+                spriteBatch.DrawString(FontManager.GetFont(FontNames.MAIN_MENU_FONT),
+                    "EDIT MODE", new Vector2((Width - 4) * TILESIZE, (Height - 1) * TILESIZE),
+                    Color.White);
         }
 
         /// <summary>
