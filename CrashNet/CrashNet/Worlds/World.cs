@@ -43,6 +43,11 @@ namespace CrashNet
         /// </summary>
         WorldNumber worldNumber;
 
+        /// <summary>
+        /// Make a new world.
+        /// </summary>
+        /// <param name="Width">The width of the world in rooms.</param>
+        /// <param name="Height">The height of the world in rooms.</param>
         public World(int Width, int Height)
         {
             // TODO: Get the properties that this world should have
@@ -62,6 +67,48 @@ namespace CrashNet
             curRoom = rooms[(int)roomCoords.X, (int)roomCoords.Y];
         }
 
+        /// <summary>
+        /// Update the world.
+        /// </summary>
+        internal void Update()
+        {
+            curRoom.Update();
+            Direction leavingDirection;
+            if (curRoom.ShouldLeave(out leavingDirection))
+            {
+                // remove the players from the current room, put them in the next room
+                // TODO: put them in the proper position in the new room.
+                Room nextRoom = GetNextRoom(leavingDirection, out roomCoords);
+                foreach (Player player in curRoom.GetPlayers())
+                {
+                    player.Position = GetNextStartPosition(player, leavingDirection);
+                    nextRoom.Add(player);
+                }
+                curRoom.Leave();
+
+                curRoom = nextRoom;
+            }
+        }
+
+        /// <summary>
+        /// Draw the world.
+        /// </summary>
+        /// <param name="spriteBatch">The drawing device of the game.</param>
+        internal void Draw(Microsoft.Xna.Framework.Graphics.SpriteBatch spriteBatch)
+        {
+            curRoom.Draw(spriteBatch);
+
+            string roomString = "Room: (" + roomCoords.X.ToString() + ", " + (string)roomCoords.Y.ToString() + ")";
+            spriteBatch.DrawString(FontManager.GetFont(FontNames.MAIN_MENU_FONT), roomString,
+                new Vector2(10, 10), Color.White);
+        }
+
+        /// <summary>
+        /// Get the exits for the given room.
+        /// </summary>
+        /// <param name="x">The x-coordinate of the room, 0-indexed.</param>
+        /// <param name="y">The y-coordinate of the room, 0-indexed.</param>
+        /// <returns>A list of all the exits for the given room.</returns>
         private List<Direction> GetExits(int x, int y)
         {
             List<Direction> exits = new List<Direction>();
@@ -79,6 +126,10 @@ namespace CrashNet
             return exits;
         }
 
+        /// <summary>
+        /// Get the coordinates of the starting room in the world.
+        /// </summary>
+        /// <returns>The coordinates of the start room.</returns>
         private Vector2 GetStartRoomCoords()
         {
  	        return new Vector2(Width / 2, Height / 2);
@@ -101,26 +152,6 @@ namespace CrashNet
         private void Add(GameObject obj, Room room)
         {
             room.Add(obj);
-        }
-
-        internal void Update()
-        {
-            curRoom.Update();
-            Direction leavingDirection;
-            if (curRoom.ShouldLeave(out leavingDirection))
-            {
-                // remove the players from the current room, put them in the next room
-                // TODO: put them in the proper position in the new room.
-                Room nextRoom = GetNextRoom(leavingDirection, out roomCoords);
-                foreach (Player player in curRoom.GetPlayers())
-                {
-                    player.Position = GetNextStartPosition(player, leavingDirection);
-                    nextRoom.Add(player);
-                }
-                curRoom.Leave();
-
-                curRoom = nextRoom;
-            }
         }
 
         /// <summary>
@@ -151,15 +182,12 @@ namespace CrashNet
             return new Vector2(newXPos, newYPos);
         }
 
-        internal void Draw(Microsoft.Xna.Framework.Graphics.SpriteBatch spriteBatch)
-        {
-            curRoom.Draw(spriteBatch);
-
-            string roomString = "Room: (" + roomCoords.X.ToString() + ", " + (string)roomCoords.Y.ToString() + ")";
-            spriteBatch.DrawString(FontManager.GetFont(FontNames.MAIN_MENU_FONT), roomString, 
-                new Vector2(10, 10), Color.White);
-        }
-
+        /// <summary>
+        /// Get the next room in the world in the given direction.
+        /// </summary>
+        /// <param name="direction">The direction of the next room.</param>
+        /// <param name="nextCoords">The coordinates of the next room.</param>
+        /// <returns>The next room in the world.</returns>
         private Room GetNextRoom(Direction direction, out Vector2 nextCoords)
         {
             Vector2 change = DirectionOperations.ToVector(direction);

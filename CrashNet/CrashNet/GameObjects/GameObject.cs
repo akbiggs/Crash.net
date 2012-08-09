@@ -271,6 +271,14 @@ namespace CrashNet.GameObjects
             }
         }
 
+        /// <summary>
+        /// Whether or not this object should collide with another object.
+        /// </summary>
+        /// <param name="other">The other object to check for a collision 
+        /// against.</param>
+        /// <param name="region">The region of collision. An empty bounding box
+        /// if the objects do not collide.</param>
+        /// <returns>True if the objects should collide, false otherwise.</returns>
         public bool ShouldCollide(GameObject other, out BBox region)
         {
             region = BBox.Intersect(other.BBox);

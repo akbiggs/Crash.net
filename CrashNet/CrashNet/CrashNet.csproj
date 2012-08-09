@@ -80,7 +80,6 @@
     <Compile Include="Engine\Direction.cs" />
     <Compile Include="GameObjects\Player.cs" />
     <Compile Include="Interface\GameMenu.cs" />
-    <Compile Include="Engine\GameState.cs" />
     <Compile Include="Interface\Map.cs" />
     <Compile Include="GameObjects\GameObject.cs" />
     <Compile Include="Worlds\Room.cs" />

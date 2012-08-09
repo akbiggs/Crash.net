@@ -194,4 +194,13 @@ namespace CrashNet.Engine
             }
         }
     }
+
+    enum GameState
+    {
+        Cutscene,
+        Level,
+        Boss,
+        GameMenu,
+        MainMenu
+    }
 }

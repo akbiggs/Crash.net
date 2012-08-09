@@ -77,6 +77,17 @@ namespace CrashNet.Worlds
             SetBorder(exits);
         }
 
+        #region Initialization
+        /// <summary>
+        /// Initializes the list of objects wanting to leave the room.
+        /// </summary>
+        private void InitializeLeavingObjects()
+        {
+            this.wantingToLeave = new Dictionary<Direction, List<GameObject>>();
+            foreach (Direction direction in Enum.GetValues(typeof(Direction)))
+                wantingToLeave[direction] = new List<GameObject>();
+        }
+
         /// <summary>
         /// Generates the border of the room based on the given
         /// list of exits.
@@ -135,16 +146,7 @@ namespace CrashNet.Worlds
                 else
                     SetTile(x, y, TileType.Wall);
         }
-
-        /// <summary>
-        /// Initializes the list of objects wanting to leave the room.
-        /// </summary>
-        private void InitializeLeavingObjects()
-        {
-            this.wantingToLeave = new Dictionary<Direction, List<GameObject>>();
-            foreach (Direction direction in Enum.GetValues(typeof(Direction)))
-                wantingToLeave[direction] = new List<GameObject>();
-        }
+        #endregion
 
         /// <summary>
         /// Gets the width of the room in pixels.
@@ -195,9 +197,16 @@ namespace CrashNet.Worlds
 
                 // check if the object wants to leave the room,
                 // update our leaving tracker if it does.
-                Direction leavingDirection;
+                Direction leavingDirection = Direction.None;
                 if (AtEdge(obj, out leavingDirection))
                     wantingToLeave[leavingDirection].Add(obj);
+
+                // it does not want to leave in more than one direction,
+                // and if it no longer wants to leave the room the tracker should
+                // not say it does.
+                foreach (Direction direction in Enum.GetValues(typeof(Direction)))
+                    if (direction != leavingDirection)
+                        wantingToLeave[direction].Remove(obj);
 
                 // collide with any other objects in the room
                 foreach (GameObject other in objects)
@@ -211,7 +220,8 @@ namespace CrashNet.Worlds
 
         internal void Draw(SpriteBatch spriteBatch)
         {
-            if (ShouldRender()) Render(spriteBatch.GraphicsDevice);
+            if (ShouldRender()) 
+                Render(spriteBatch.GraphicsDevice);
 
             spriteBatch.Draw(texture, new Vector2(0, 0), Color.White);
 
@@ -239,6 +249,41 @@ namespace CrashNet.Worlds
             return row >= 0 && row < Height;
         }
 
+        /// <summary>
+        /// Whether or not the room should be exited.
+        /// </summary>
+        /// <param name="direction">The direction in which to leave the room, or
+        /// Direction.None if the room should not be left in any direction.</param>
+        /// <returns>True if the room should be exited, false otherwise.</returns>
+        public bool ShouldLeave(out Direction direction)
+        {
+            foreach (KeyValuePair<Direction, List<GameObject>> pair in wantingToLeave)
+            {
+                // if the players are both trying to leave in the same direction,
+                // leave in that direction.
+                // TODO: make this subset checking thing into a helper method in a separate
+                // class.
+                if (!GetPlayers().Cast<GameObject>().Except(pair.Value).Any())
+                {
+                    direction = pair.Key;
+                    return true;
+                }
+            }
+
+            direction = Direction.None;
+            return false;
+        }
+
+        /// <summary>
+        /// Cleans up the room behind the players as they leave.
+        /// </summary>
+        public void Leave()
+        {
+            InitializeLeavingObjects();
+            RemovePlayers();
+        }
+
+        #region Object Operations
         /// <summary>
         /// Adds the given object to the room.
         /// </summary>
@@ -285,6 +330,13 @@ namespace CrashNet.Worlds
             return (int)(((obj.BBox.X % TILESIZE) + obj.BBox.Width) / TILESIZE);
         }
 
+        /// <summary>
+        /// Check if the given object is at the edge of the room.
+        /// </summary>
+        /// <param name="obj">The object in the room to check.</param>
+        /// <param name="direction">The edge of the room that the object is at, or
+        /// Direction.None if the object is not at the edge of the room.</param>
+        /// <returns>True if the object is at the edge of the room, false otherwise.</returns>
         private bool AtEdge(GameObject obj, out Direction direction)
         {
             // use the center of the object's bounding box as the telltale point of whether or not
@@ -292,6 +344,7 @@ namespace CrashNet.Worlds
             Vector2 coords = GetTileCoordsByPixel(new Vector2(obj.BBox.Center.X, obj.BBox.Center.Y));
             direction = Direction.None;
 
+            // check diagonal edges first
             if (coords.X == 0 && coords.Y == 0)
                 direction = Direction.NorthWest;
             else if (coords.X == Width - 1 && coords.Y == 0)
@@ -300,6 +353,8 @@ namespace CrashNet.Worlds
                 direction = Direction.SouthWest;
             else if (coords.X == Width - 1 && coords.Y == Height - 1)
                 direction = Direction.SouthEast;
+
+            // check the other edges
             else if (coords.X == 0)
                 direction = Direction.West;
             else if (coords.X == Width - 1)
@@ -313,41 +368,22 @@ namespace CrashNet.Worlds
         }
 
         /// <summary>
-        /// 
+        /// Get the players in the room.
         /// </summary>
-        public void Leave()
-        {
-            InitializeLeavingObjects();
-            RemovePlayers();
-        }
-
-        public bool ShouldLeave(out Direction direction)
-        {
-            foreach (KeyValuePair<Direction, List<GameObject>> pair in wantingToLeave) {
-                // if the players are both trying to leave in the same direction,
-                // leave in that direction.
-                // TODO: make this subset checking thing into a helper method in a separate
-                // class.
-                if (!GetPlayers().Cast<GameObject>().Except(pair.Value).Any())
-                {
-                    direction = pair.Key;
-                    return true;
-                }
-            }
-
-            direction = Direction.None;
-            return false;
-        }
-
+        /// <returns>A list of the player characters in the room.</returns>
         public List<Player> GetPlayers()
         {
             return objects.Where(x => x is Player).Cast<Player>().ToList();
         }
 
+        /// <summary>
+        /// Remove the players from the room.
+        /// </summary>
         private void RemovePlayers()
         {
             objects = objects.Where(x => !(x is Player)).ToList();
         }
+        #endregion
 
         #region Tile Operations
 
@@ -492,6 +528,7 @@ namespace CrashNet.Worlds
         }
         #endregion
 
+        #region Foreground Rendering
         /// <summary>
         /// Renders the texture of the room's foreground.
         /// </summary>
@@ -539,5 +576,6 @@ namespace CrashNet.Worlds
         {
             return unrenderedRegion != Rectangle.Empty;
         }
+        #endregion
     }
 }
