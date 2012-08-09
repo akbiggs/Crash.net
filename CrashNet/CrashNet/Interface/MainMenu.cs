@@ -2,19 +2,20 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
+using Microsoft.Xna.Framework;
 
 namespace CrashNet
 {
-    class UserInterface
+    class MainMenu : Menu
     {
         internal void Update()
         {
-            throw new NotImplementedException();
         }
 
         internal void Draw(Microsoft.Xna.Framework.Graphics.SpriteBatch spriteBatch)
         {
-            throw new NotImplementedException();
+            spriteBatch.DrawString(FontManager.GetFont(FontNames.MAIN_MENU_FONT), "Main Menu", 
+                new Vector2(0, 0), Color.White);
         }
     }
 }

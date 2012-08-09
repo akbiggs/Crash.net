@@ -5,8 +5,9 @@ using System.Text;
 
 namespace CrashNet
 {
-    class MainMenu : Menu
+    class GameMenu : Menu
     {
+
         internal void Update()
         {
             throw new NotImplementedException();

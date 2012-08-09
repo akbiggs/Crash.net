@@ -5,17 +5,16 @@ using System.Text;
 
 namespace CrashNet
 {
-    class GameMenu
+    class UserInterface
     {
-
         internal void Update()
         {
-            throw new NotImplementedException();
+            // TODO: Add update method.
         }
 
         internal void Draw(Microsoft.Xna.Framework.Graphics.SpriteBatch spriteBatch)
         {
-            throw new NotImplementedException();
+            // TODO: Add draw method.
         }
     }
 }

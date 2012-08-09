@@ -8,8 +8,11 @@ using Microsoft.Xna.Framework.GamerServices;
 using Microsoft.Xna.Framework.Graphics;
 using Microsoft.Xna.Framework.Input;
 using Microsoft.Xna.Framework.Media;
+using CrashNet.Worlds;
+using CrashNet.GameObjects;
+using CrashNet.Engine;
 
-namespace CrashNet
+namespace CrashNet.Engine
 {
     /// <summary>
     /// This is the main type for your game
@@ -23,8 +26,8 @@ namespace CrashNet
         private int height;
 
         GameState state;
-        Level curLevel;
-        
+
+        World world;
         Cutscene curCutscene;
 
         MainMenu mainMenu;
@@ -37,6 +40,7 @@ namespace CrashNet
         {
             graphics = new GraphicsDeviceManager(this);
             graphics.IsFullScreen = IsFullScreen;
+            IsMouseVisible = true;
             Content.RootDirectory = "Content";
 
             this.Width = Width;
@@ -51,9 +55,8 @@ namespace CrashNet
         /// </summary>
         protected override void Initialize()
         {
-            state = GameState.MainMenu;
-            background = new Background();
-            mainMenu = new MainMenu();
+            state = GameState.Level;
+
             base.Initialize();
         }
 
@@ -66,7 +69,19 @@ namespace CrashNet
             // Create a new SpriteBatch, which can be used to draw textures.
             spriteBatch = new SpriteBatch(GraphicsDevice);
 
-            // TODO: use this.Content to load your game content here
+            TextureManager.LoadContents(Content);
+            FontManager.LoadContents(Content);
+
+            //initializing here because they are dependent on content managers
+            background = new Background(Width, Height, TextureManager.GetTexture(TextureNames.BACKGROUND));
+
+            world = new World(WorldNumber.World1);
+            world.Add(new Player(PlayerNumber.One, new Vector2(200, 200)));
+            world.Add(new Player(PlayerNumber.Two, new Vector2(100, 100)));
+
+            ui = new UserInterface();
+
+            mainMenu = new MainMenu();
         }
 
         /// <summary>
@@ -85,6 +100,9 @@ namespace CrashNet
         /// <param name="gameTime">Provides a snapshot of timing values.</param>
         protected override void Update(GameTime gameTime)
         {
+            if (IsActive)
+                Input.Update();
+
             // Allows the game to exit
             if (GamePad.GetState(PlayerIndex.One).Buttons.Back == ButtonState.Pressed)
                 this.Exit();
@@ -95,7 +113,7 @@ namespace CrashNet
                 case GameState.Level:
                 case GameState.Boss:
                     background.Update();
-                    curLevel.Update();
+                    world.Update();
                     ui.Update();
                     break;
 
@@ -123,15 +141,14 @@ namespace CrashNet
         /// <param name="gameTime">Provides a snapshot of timing values.</param>
         protected override void Draw(GameTime gameTime)
         {
-            
-
+            spriteBatch.Begin();
             // Render components based on the mode the game is in.
             switch (state)
             {
                 case GameState.Level:
                 case GameState.Boss:
                     background.Draw(spriteBatch);
-                    curLevel.Draw(spriteBatch);
+                    world.Draw(spriteBatch);
                     ui.Draw(spriteBatch);
                     break;
 
@@ -141,7 +158,7 @@ namespace CrashNet
 
                 case GameState.GameMenu:
                     background.Draw(spriteBatch);
-                    curLevel.Draw(spriteBatch);
+                    world.Draw(spriteBatch);
                     ui.Draw(spriteBatch);
                     gameMenu.Draw(spriteBatch);
                     break;
@@ -153,28 +170,26 @@ namespace CrashNet
             }
 
             base.Draw(gameTime);
+
+            spriteBatch.End();
         }
 
         public int Width {
-            get
-            {
-                return width;
-            }
+            get { return width; }
             set
             {
                 width = value;
+                if (background != null) background.Width = width;
                 graphics.PreferredBackBufferWidth = width;
             }
         }
 
         public int Height {
-            get
-            {
-                return height;
-            }
+            get { return height; }
             set
             {
                 height = value;
+                if (background != null) background.Height = height;
                 graphics.PreferredBackBufferHeight = height;
             }
         }
