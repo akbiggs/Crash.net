@@ -87,14 +87,57 @@ namespace CrashNet.Engine
             }
         }
 
+        /// <summary>
+        /// Whether or not the given direction is horizontal.
+        /// </summary>
+        /// <param name="direction">The direction to check.</param>
+        /// <returns>True if the direction is horizontal, false otherwise.</returns>
         public static bool IsHorizontal(Direction direction)
         {
             return ToVector(direction).X != 0;
         }
 
+        /// <summary>
+        /// Whether or not the given direction is vertical.
+        /// </summary>
+        /// <param name="direction">The direction to check.</param>
+        /// <returns>True if the direction is vertical, false otherwise.</returns>
         public static bool IsVertical(Direction direction)
         {
             return ToVector(direction).Y != 0;
+        }
+
+        /// <summary>
+        /// Combines the list of given directions into a single direction.
+        /// </summary>
+        /// <param name="directions">The directions to combine.</param>
+        /// <returns>A single direction derived from the given directions.</returns>
+        public static Direction Combine(List<Direction> directions)
+        {
+            // remove opposing directions
+            if (directions.Contains(Direction.West) && directions.Contains(Direction.East))
+            {
+                directions.Remove(Direction.West);
+                directions.Remove(Direction.East);
+            }
+            if (directions.Contains(Direction.North) && directions.Contains(Direction.South))
+            {
+                directions.Remove(Direction.North);
+                directions.Remove(Direction.South);
+            }
+
+            if (directions.Count == 0)
+                return Direction.None;
+            else if (directions.Count == 1)
+                return directions[0];
+            else if (directions.Contains(Direction.North) && directions.Contains(Direction.West))
+                return Direction.NorthWest;
+            else if (directions.Contains(Direction.North) && directions.Contains(Direction.East))
+                return Direction.NorthEast;
+            else if (directions.Contains(Direction.South) && directions.Contains(Direction.West))
+                return Direction.SouthWest;
+            else
+                return Direction.SouthEast;
         }
     }
 }

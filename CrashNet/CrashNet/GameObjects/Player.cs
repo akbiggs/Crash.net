@@ -11,6 +11,7 @@ namespace CrashNet.GameObjects
 {
     class Player : GameObject
     {
+        // movement constants
         const float MAX_VELOCITY_X = 10;
         const float MAX_VELOCITY_Y = 10;
         const float ACCELERATION_X = 2;
@@ -58,25 +59,18 @@ namespace CrashNet.GameObjects
         {
             if (IsAlive)
             {
-                
-                if (Input.IsKeyDown(Up) && Input.IsKeyDown(Left))
-                    Move(Direction.NorthWest, room);
-                else if (Input.IsKeyDown(Up) && Input.IsKeyDown(Right))
-                    Move(Direction.NorthEast, room);
-                else if (Input.IsKeyDown(Down) && Input.IsKeyDown(Left))
-                    Move(Direction.SouthWest, room);
-                else if (Input.IsKeyDown(Down) && Input.IsKeyDown(Right))
-                    Move(Direction.SouthEast, room);
-                else if (Input.IsKeyDown(Left))
-                    Move(Direction.West, room);
-                else if (Input.IsKeyDown(Right))
-                    Move(Direction.East, room);
-                else if (Input.IsKeyDown(Up))
-                    Move(Direction.North, room);
-                else if (Input.IsKeyDown(Down))
-                    Move(Direction.South, room);
-                else
-                    Move(Direction.None, room);
+                List<Direction> directions = new List<Direction>();
+                if (Input.IsKeyDown(Up))
+                    directions.Add(Direction.North);
+                if (Input.IsKeyDown(Down))
+                    directions.Add(Direction.South);
+                if (Input.IsKeyDown(Left))
+                    directions.Add(Direction.West);
+                if (Input.IsKeyDown(Right))
+                    directions.Add(Direction.East);
+
+                Direction direction = DirectionOperations.Combine(directions);
+                Move(direction, room);
 
                 base.Update(room);
             }

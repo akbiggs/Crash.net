@@ -235,8 +235,8 @@ namespace CrashNet.Worlds
                     wantingToLeave[leavingDirection].Add(obj);
 
                 // it does not want to leave in more than one direction,
-                // and if it no longer wants to leave the room the tracker should
-                // not say it does.
+                // and if it no longer wants to leave the room remove it from the
+                // tracker.
                 foreach (Direction direction in Enum.GetValues(typeof(Direction)))
                     if (direction != leavingDirection)
                         wantingToLeave[direction].Remove(obj);

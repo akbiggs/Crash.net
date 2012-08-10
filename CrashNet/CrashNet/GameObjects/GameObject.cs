@@ -17,7 +17,6 @@ namespace CrashNet.GameObjects
         //used for calculating rotation angles
         const float DEFAULT_ROTATION_SPEED = (float)(Math.PI / 20);
         
-        
         Vector2 position;
         internal Vector2 origin;
 
@@ -101,7 +100,7 @@ namespace CrashNet.GameObjects
                 float angle = (float)DirectionOperations.ToRadians(direction);
                 RotateTo(angle);
 
-                // There's this weird arithmetic bug where these produce very small values during movements along
+                // There's this arithmetic bug where sin and cos produce very small values during movements along
                 // the opposite axes, so round them.
                 xComponent = (float)(acceleration.X * Math.Round(Math.Sin(angle), 6));
                 // up is negative, down is positive, so multiply by -1. 
