@@ -78,6 +78,7 @@
     <Compile Include="Engine\FontManager.cs" />
     <Compile Include="Engine\Input.cs" />
     <Compile Include="Engine\Direction.cs" />
+    <Compile Include="Engine\RoomManager.cs" />
     <Compile Include="GameObjects\Player.cs" />
     <Compile Include="Interface\GameMenu.cs" />
     <Compile Include="Interface\Map.cs" />

@@ -11,6 +11,9 @@ namespace CrashNet
     {
         private static Dictionary<String, SpriteFont> fontDic = new Dictionary<string, SpriteFont>();
 
+        // the directory in which the fonts are stored.
+        static string dir = "Fonts\\";
+
         private static List<String> fontNames = new List<String> {
             //Menus
             FontNames.MAIN_MENU_FONT
@@ -24,7 +27,7 @@ namespace CrashNet
         {
             foreach (String name in fontNames)
             {
-                fontDic[name] = content.Load<SpriteFont>(name);
+                fontDic[name] = content.Load<SpriteFont>(dir + name);
             }
         }
 

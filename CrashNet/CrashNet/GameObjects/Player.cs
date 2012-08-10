@@ -58,6 +58,7 @@ namespace CrashNet.GameObjects
         {
             if (IsAlive)
             {
+                
                 if (Input.IsKeyDown(Up) && Input.IsKeyDown(Left))
                     Move(Direction.NorthWest, room);
                 else if (Input.IsKeyDown(Up) && Input.IsKeyDown(Right))
