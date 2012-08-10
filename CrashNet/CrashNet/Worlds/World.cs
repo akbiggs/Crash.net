@@ -46,21 +46,21 @@ namespace CrashNet
         /// <summary>
         /// Make a new world.
         /// </summary>
-        /// <param name="Width">The width of the world in rooms.</param>
+        /// <param name="width">The width of the world in rooms.</param>
         /// <param name="Height">The height of the world in rooms.</param>
-        public World(int Width, int Height)
+        public World(int width, int height, int roomWidth, int roomHeight)
         {
             // TODO: Get the properties that this world should have
             // based on the world number.
-            this.Width = Width;
-            this.Height = Height;
+            this.Width = width;
+            this.Height = height;
 
-            rooms = new Room[Width, Height];
-            for (int x = 0; x < Width; x++)
+            rooms = new Room[width, Height];
+            for (int x = 0; x < width; x++)
                 for (int y = 0; y < Height; y++)
                 {
                     List<Direction> exits = GetExits(x, y);
-                    rooms[x, y] = new Room(20, 20, exits);
+                    rooms[x, y] = new Room(roomWidth, roomHeight, exits);
                 }
 
             roomCoords = GetStartRoomCoords();

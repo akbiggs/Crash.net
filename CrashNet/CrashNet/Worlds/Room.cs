@@ -31,6 +31,11 @@ namespace CrashNet.Worlds
         const int EXIT_PADDING = 2;
 
         /// <summary>
+        /// The folder for rooms to be saved in.
+        /// </summary>
+        const string ROOM_FOLDER = "\\..\\..\\..\\Worlds\\Rooms\\";
+
+        /// <summary>
         /// The savename of the room file.
         /// </summary>
         const string SAVE_NAME = "Room.csv";
@@ -87,6 +92,13 @@ namespace CrashNet.Worlds
             SetBorder(exits);
         }
 
+        public Room(Tile[,] tiles) :
+            this(tiles.GetLength(0), tiles.GetLength(1), new List<Direction>())
+        {
+            this.tiles = tiles;
+        }
+
+
         #region Initialization
         /// <summary>
         /// Initializes the list of objects wanting to leave the room.
@@ -111,11 +123,11 @@ namespace CrashNet.Worlds
             // generate north border
             y = 0;
             for (x = 0; x < Width; x++)
-                if (MathHelper.Distance(x, 0) <= EXIT_PADDING && exits.Contains(Direction.NorthWest))
+                if (MathHelper.Distance(x, 0) < EXIT_PADDING && exits.Contains(Direction.NorthWest))
                     SetTile(x, y, TileType.Ground);
-                else if (MathHelper.Distance(x, Width / 2 - 1) <= EXIT_PADDING && exits.Contains(Direction.North))
+                else if (MathHelper.Distance(x, Width / 2) < EXIT_PADDING && exits.Contains(Direction.North))
                     SetTile(x, y, TileType.Ground);
-                else if (MathHelper.Distance(x, Width - 1) <= EXIT_PADDING && exits.Contains(Direction.NorthEast))
+                else if (MathHelper.Distance(x, Width - 1) < EXIT_PADDING && exits.Contains(Direction.NorthEast))
                     SetTile(x, y, TileType.Ground);
                 else
                     SetTile(x, y, TileType.Wall);
@@ -123,11 +135,11 @@ namespace CrashNet.Worlds
             // generate south border
             y = Height - 1;
             for (x = 0; x < Width; x++)
-                if (MathHelper.Distance(x, 0) <= EXIT_PADDING && exits.Contains(Direction.SouthWest))
+                if (MathHelper.Distance(x, 0) < EXIT_PADDING && exits.Contains(Direction.SouthWest))
                     SetTile(x, y, TileType.Ground);
-                else if (MathHelper.Distance(x, Width / 2 - 1) <= EXIT_PADDING && exits.Contains(Direction.South))
+                else if (MathHelper.Distance(x, Width / 2) < EXIT_PADDING && exits.Contains(Direction.South))
                     SetTile(x, y, TileType.Ground);
-                else if (MathHelper.Distance(x, Width - 1) <= EXIT_PADDING && exits.Contains(Direction.SouthEast))
+                else if (MathHelper.Distance(x, Width - 1) < EXIT_PADDING && exits.Contains(Direction.SouthEast))
                     SetTile(x, y, TileType.Ground);
                 else
                     SetTile(x, y, TileType.Wall);
@@ -135,11 +147,11 @@ namespace CrashNet.Worlds
             // generate west border
             x = 0;
             for (y = 0; y < Height; y++)
-                if (MathHelper.Distance(y, 0) <= EXIT_PADDING && exits.Contains(Direction.NorthWest))
+                if (MathHelper.Distance(y, 0) < EXIT_PADDING && exits.Contains(Direction.NorthWest))
                     SetTile(x, y, TileType.Ground);
-                else if (MathHelper.Distance(y, Height / 2 - 1) <= EXIT_PADDING && exits.Contains(Direction.West))
+                else if (MathHelper.Distance(y, Height / 2) < EXIT_PADDING && exits.Contains(Direction.West))
                     SetTile(x, y, TileType.Ground);
-                else if (MathHelper.Distance(y, Height - 1) <= EXIT_PADDING && exits.Contains(Direction.SouthWest))
+                else if (MathHelper.Distance(y, Height - 1) < EXIT_PADDING && exits.Contains(Direction.SouthWest))
                     SetTile(x, y, TileType.Ground);
                 else
                     SetTile(x, y, TileType.Wall);
@@ -147,11 +159,11 @@ namespace CrashNet.Worlds
             // generate east border
             x = Width - 1;
             for (y = 0; y < Height; y++)
-                if (MathHelper.Distance(y, 0) <= EXIT_PADDING && exits.Contains(Direction.NorthEast))
+                if (MathHelper.Distance(y, 0) < EXIT_PADDING && exits.Contains(Direction.NorthEast))
                     SetTile(x, y, TileType.Ground);
-                else if (MathHelper.Distance(y, Height / 2 - 1) <= EXIT_PADDING && exits.Contains(Direction.East))
+                else if (MathHelper.Distance(y, Height / 2) < EXIT_PADDING && exits.Contains(Direction.East))
                     SetTile(x, y, TileType.Ground);
-                else if (MathHelper.Distance(y, Height - 1) <= EXIT_PADDING && exits.Contains(Direction.SouthEast))
+                else if (MathHelper.Distance(y, Height - 1) < EXIT_PADDING && exits.Contains(Direction.SouthEast))
                     SetTile(x, y, TileType.Ground);
                 else
                     SetTile(x, y, TileType.Wall);
@@ -201,7 +213,8 @@ namespace CrashNet.Worlds
                 if (Input.MouseRightButtonDown)
                 {
                     Vector2 mousePos = Input.MousePosition;
-                    Add(new Player(PlayerNumber.One, mousePos));
+                    Vector2 tileCoords = GetTileCoordsByPixel(mousePos.X, mousePos.Y);
+                    SetTile((int)tileCoords.X, (int)tileCoords.Y, TileType.Ground);
                 }
             }
             #endregion
@@ -244,7 +257,7 @@ namespace CrashNet.Worlds
         private void Save()
         {
             // save under the appropriate name in the appropriate directory
-            string saveDir = Directory.GetCurrentDirectory() + "\\..\\..\\..\\Worlds\\Rooms\\";
+            string saveDir = Directory.GetCurrentDirectory() + ROOM_FOLDER;
             string fileName = SAVE_NAME;
 
             // go through and write each tile to the comma-separated file
