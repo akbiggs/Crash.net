@@ -1,0 +1,58 @@
+﻿<?xml version="1.0" encoding="utf-8" ?>
+<ParticleSystem>
+  <XNAParameters>
+    <!-- XNA-specific parameters go here.-->
+    <spriteEffects x="None"></spriteEffects>
+    <blendState x="Additive"></blendState>
+    <spriteSortMode x="Deferred"></spriteSortMode>
+    <textureList>
+      <texture x="smoke"></texture>
+    </textureList>
+  </XNAParameters>
+  <!-- Explicit parameters for emitter go here: -->
+  <EmitterParameters>
+    <location x="300" y="350" z="0"></location>
+    <dimension x="25" y="25" z="0"></dimension>
+    <maxNumParticles x="5000"></maxNumParticles>
+    <emitRate x="1"></emitRate>
+    <meanEmitDelay x="50"></meanEmitDelay>
+    <emitterLifetime x="15000"></emitterLifetime>
+    <permanentParticles x="false"></permanentParticles>
+  </EmitterParameters>
+  <!-- Random parameters for particle generation go here:-->
+  <ParticleParameters>
+    <position>
+      <alpha x="0" y="-35" z="0"></alpha>
+      <beta x="50" y="35" z="0"></beta> 
+      <distribution x="Normal"></distribution>
+    </position>
+    
+    <velocity>
+      <alpha x="10" y="-50" z="0"></alpha>
+      <beta x="50" y="-25" z="0"></beta>
+      <distribution x="Uniform"></distribution>
+    </velocity>
+    
+    <acceleration>
+      <alpha x="0.0" y="-0.1" z="0"></alpha>
+      <beta x="0.05" y="-0.05" z="0"></beta>
+      <distribution x="Uniform"></distribution>
+    </acceleration>
+
+
+    <color>
+    <alpha x="255" y="255" z="255"></alpha>
+    <beta x="255" y="255" z="255"></beta>
+    <distribution x="Fixed"></distribution>
+    </color>
+    
+    <angle alpha="0" beta="1.0" distribution="Uniform"></angle>
+    <angularVelocity alpha="0.25" beta="0.5" distribution="Uniform"></angularVelocity>
+    <transparency alpha="0.5" beta="1.0" distribution="Uniform"></transparency>
+    <transparencyDelta alpha="-0.025" beta="-0.01" distribution="Uniform"></transparencyDelta>
+    <size alpha="0.25" beta="0.05" distribution="Normal"></size>
+    <growth alpha="0.0" beta="0.1" distribution="Uniform"></growth>
+    <ttl alpha="12000" beta="1000" distribution="Normal"></ttl>
+  </ParticleParameters>
+    
+</ParticleSystem>

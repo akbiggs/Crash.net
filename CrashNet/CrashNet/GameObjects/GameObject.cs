@@ -110,6 +110,29 @@ namespace CrashNet.GameObjects
 
             }
             ChangeVelocity(new Vector2(xComponent, yComponent));
+            Move(room);
+                
+        }
+
+        /**
+         * Returns x,y component vector from the specified direction and speed.
+         * NOTE: Can use this Move() method above.
+         **/
+        internal Vector2 GetXYComponents(Direction dir, float magnitudex, float magnitudey)
+        {
+            float x, y, theta;
+            theta = (float)DirectionOperations.ToRadians(dir);
+
+            x = (float)(magnitudex * Math.Round(Math.Sin(theta), 6));
+            y = (float)(-1 * magnitudey * Math.Round(Math.Cos(theta), 6));
+            return new Vector2((float)x, (float)y);
+        }
+
+        /**
+         * Moves GameObject based on its current velocity.
+         **/ 
+        internal virtual void Move(Room room)
+        {
             if (Velocity.X != 0)
                 ChangeXPosition(Velocity.X, room);
             if (Velocity.Y != 0)
