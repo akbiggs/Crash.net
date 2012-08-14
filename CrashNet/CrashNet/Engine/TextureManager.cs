@@ -15,6 +15,9 @@ namespace CrashNet
         // Stores representations of textures as colors(useful for rendering)
         static Dictionary<String, Color[,]> colDic = new Dictionary<String, Color[,]>();
 
+        // the directory in which the textures are stored
+        static string dir = "Textures\\";
+
         static List<string> textureNames = new List<String>
         {
             // Players
@@ -41,7 +44,7 @@ namespace CrashNet
         {
             foreach (string name in textureNames)
             {
-                Texture2D texture = content.Load<Texture2D>(name);
+                Texture2D texture = content.Load<Texture2D>(dir + name);
                 texDic[name] = texture;
                 colDic[name] = TextureToColor2D(texture);
             }
@@ -112,8 +115,6 @@ namespace CrashNet
 
             return colors2D;
         }
-
-        
     }
 
     //stores constants for texture names

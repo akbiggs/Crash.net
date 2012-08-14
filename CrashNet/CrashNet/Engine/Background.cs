@@ -35,7 +35,11 @@ namespace CrashNet
             Texture = texture;
         }
 
-        internal void Update()
+        /// <summary>
+        /// Updates the background.
+        /// </summary>
+        /// <param name="gameTime">The game's timer.</param>
+        internal void Update(GameTime gameTime)
         {
         }
 

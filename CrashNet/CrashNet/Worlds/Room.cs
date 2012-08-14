@@ -7,6 +7,9 @@ using Microsoft.Xna.Framework;
 using CrashNet.GameObjects;
 using CrashNet.Engine;
 using System.Timers;
+using Microsoft.Xna.Framework.Input;
+using System.IO;
+
 
 namespace CrashNet.Worlds
 {
@@ -20,12 +23,32 @@ namespace CrashNet.Worlds
         /// <summary>
         /// How much distance to keep objects away from walls.
         /// </summary>
-        const float WALL_PADDING = 0.01f;
+        const float WALL_PADDING = 0.1f;
+
+        /// <summary>
+        /// How many tiles should be free next to each exit.
+        /// </summary>
+        const int EXIT_PADDING = 2;
+
+        /// <summary>
+        /// The folder for rooms to be saved in.
+        /// </summary>
+        const string ROOM_FOLDER = "\\..\\..\\..\\Worlds\\Rooms\\";
+
+        /// <summary>
+        /// The savename of the room file.
+        /// </summary>
+        const string SAVE_NAME = "Room.csv";
 
         /// <summary>
         /// All the objects in the room.
         /// </summary>
         List<GameObject> objects;
+
+        /// <summary>
+        /// All of the objects that want to leave the room.
+        /// </summary>
+        Dictionary<Direction, List<GameObject>> wantingToLeave;
 
         /// <summary>
         /// All the tiles in the room.
@@ -45,29 +68,113 @@ namespace CrashNet.Worlds
         Texture2D texture = null;
         Rectangle unrenderedRegion = Rectangle.Empty;
 
+        bool editMode = false;
+
         /// <summary>
         /// Makes a new room.
         /// </summary>
         /// <param name="width">The width of the room in tiles.</param>
         /// <param name="height">The height of the room in tiles.</param>
-        public Room(int width, int height)
+        /// <param name="exits">The directions in which one can exit from the room.</param>
+        public Room(int width, int height, List<Direction> exits)
         {
             this.Width = width;
             this.Height = height;
 
             this.objects = new List<GameObject>();
-
+            InitializeLeavingObjects();
+            
             tiles = new Tile[Width, Height];
             for (int col = 0; col < Width; col++)
                 for (int row = 0; row < Height; row++)
-                    SetTile(col, row, new Tile(new Vector2(col * TILESIZE, row * TILESIZE), TileType.Ground));
+                    SetTile(col, row, TileType.Ground);
+
+            SetBorder(exits);
         }
+
+        public Room(Tile[,] tiles) :
+            this(tiles.GetLength(0), tiles.GetLength(1), new List<Direction>())
+        {
+            this.tiles = tiles;
+        }
+
+
+        #region Initialization
+        /// <summary>
+        /// Initializes the list of objects wanting to leave the room.
+        /// </summary>
+        private void InitializeLeavingObjects()
+        {
+            this.wantingToLeave = new Dictionary<Direction, List<GameObject>>();
+            foreach (Direction direction in Enum.GetValues(typeof(Direction)))
+                wantingToLeave[direction] = new List<GameObject>();
+        }
+
+        /// <summary>
+        /// Generates the border of the room based on the given
+        /// list of exits.
+        /// </summary>
+        /// <param name="exits">The exits from the room.</param>
+        private void SetBorder(List<Direction> exits)
+        {
+            int x, y;
+
+            // TODO: generalize these into a method.
+            // generate north border
+            y = 0;
+            for (x = 0; x < Width; x++)
+                if (MathHelper.Distance(x, 0) < EXIT_PADDING && exits.Contains(Direction.NorthWest))
+                    SetTile(x, y, TileType.Ground);
+                else if (MathHelper.Distance(x, Width / 2) < EXIT_PADDING && exits.Contains(Direction.North))
+                    SetTile(x, y, TileType.Ground);
+                else if (MathHelper.Distance(x, Width - 1) < EXIT_PADDING && exits.Contains(Direction.NorthEast))
+                    SetTile(x, y, TileType.Ground);
+                else
+                    SetTile(x, y, TileType.Wall);
+
+            // generate south border
+            y = Height - 1;
+            for (x = 0; x < Width; x++)
+                if (MathHelper.Distance(x, 0) < EXIT_PADDING && exits.Contains(Direction.SouthWest))
+                    SetTile(x, y, TileType.Ground);
+                else if (MathHelper.Distance(x, Width / 2) < EXIT_PADDING && exits.Contains(Direction.South))
+                    SetTile(x, y, TileType.Ground);
+                else if (MathHelper.Distance(x, Width - 1) < EXIT_PADDING && exits.Contains(Direction.SouthEast))
+                    SetTile(x, y, TileType.Ground);
+                else
+                    SetTile(x, y, TileType.Wall);
+
+            // generate west border
+            x = 0;
+            for (y = 0; y < Height; y++)
+                if (MathHelper.Distance(y, 0) < EXIT_PADDING && exits.Contains(Direction.NorthWest))
+                    SetTile(x, y, TileType.Ground);
+                else if (MathHelper.Distance(y, Height / 2) < EXIT_PADDING && exits.Contains(Direction.West))
+                    SetTile(x, y, TileType.Ground);
+                else if (MathHelper.Distance(y, Height - 1) < EXIT_PADDING && exits.Contains(Direction.SouthWest))
+                    SetTile(x, y, TileType.Ground);
+                else
+                    SetTile(x, y, TileType.Wall);
+ 
+            // generate east border
+            x = Width - 1;
+            for (y = 0; y < Height; y++)
+                if (MathHelper.Distance(y, 0) < EXIT_PADDING && exits.Contains(Direction.NorthEast))
+                    SetTile(x, y, TileType.Ground);
+                else if (MathHelper.Distance(y, Height / 2) < EXIT_PADDING && exits.Contains(Direction.East))
+                    SetTile(x, y, TileType.Ground);
+                else if (MathHelper.Distance(y, Height - 1) < EXIT_PADDING && exits.Contains(Direction.SouthEast))
+                    SetTile(x, y, TileType.Ground);
+                else
+                    SetTile(x, y, TileType.Wall);
+        }
+        #endregion
 
         /// <summary>
         /// Gets the width of the room in pixels.
         /// </summary>
         /// <returns>The width of the room in pixels.</returns>
-        private int GetWidthInPixels()
+        public int GetWidthInPixels()
         {
             return Width * TILESIZE;
         }
@@ -76,7 +183,7 @@ namespace CrashNet.Worlds
         /// Gets the height of the room in pixels.
         /// </summary>
         /// <returns>The height of the room in pixels.</returns>
-        private int GetHeightInPixels()
+        public int GetHeightInPixels()
         {
             return Height * TILESIZE;
         }
@@ -84,48 +191,116 @@ namespace CrashNet.Worlds
         /// <summary>
         /// Updates the room.
         /// </summary>
-        internal virtual void Update()
+        internal virtual void Update(GameTime gameTime)
         {
             #region LEVEL EDITOR
-            if (Input.MouseLeftButtonDown)
-            {
-                Vector2 mousePos = Input.MousePosition;
-                Vector2 tileCoords = GetTileCoordsByPixel(mousePos.X, mousePos.Y);
-                SetTile((int)tileCoords.X, (int)tileCoords.Y, new Tile(new Vector2(tileCoords.X, tileCoords.Y), TileType.Wall));
-            }
 
-            if (Input.MouseRightButtonDown)
+            if (Input.KeyboardTapped(Keys.F1))
+                Save();
+
+            if (Input.KeyboardTapped(Keys.F2))
+                editMode = !editMode;
+
+            if (editMode)
             {
-                Vector2 mousePos = Input.MousePosition;
-                Add(new Player(PlayerNumber.One, mousePos));
+                if (Input.MouseLeftButtonDown)
+                {
+                    Vector2 mousePos = Input.MousePosition;
+                    Vector2 tileCoords = GetTileCoordsByPixel(mousePos.X, mousePos.Y);
+                    SetTile((int)tileCoords.X, (int)tileCoords.Y, TileType.Wall);
+                }
+
+                if (Input.MouseRightButtonDown)
+                {
+                    Vector2 mousePos = Input.MousePosition;
+                    Vector2 tileCoords = GetTileCoordsByPixel(mousePos.X, mousePos.Y);
+                    SetTile((int)tileCoords.X, (int)tileCoords.Y, TileType.Ground);
+                }
             }
             #endregion
 
             foreach (Tile tile in tiles)
-                tile.Update(this);
+                tile.Update(gameTime, this);
 
             foreach (GameObject obj in objects)
             {
-                obj.Update(this);
+                // update and keep in boundaries of stage
+                obj.Update(gameTime, this);
                 KeepInBounds(obj);
 
+                // check if the object wants to leave the room,
+                // update our leaving tracker if it does.
+                Direction leavingDirection = Direction.None;
+                if (AtEdge(obj, out leavingDirection))
+                    wantingToLeave[leavingDirection].Add(obj);
+
+                // it does not want to leave in more than one direction,
+                // and if it no longer wants to leave the room remove it from the
+                // tracker.
+                foreach (Direction direction in Enum.GetValues(typeof(Direction)))
+                    if (direction != leavingDirection)
+                        wantingToLeave[direction].Remove(obj);
+
+                // collide with any other objects in the room
                 foreach (GameObject other in objects)
                 {
                     BBox region;
                     if (obj != other && obj.ShouldCollide(other, out region))
                         obj.Collide(other, region);
-                }        
+                }
             }
+        }
+
+        /// <summary>
+        /// Save this room to a file.
+        /// </summary>
+        private void Save()
+        {
+            // save under the appropriate name in the appropriate directory
+            string saveDir = Directory.GetCurrentDirectory() + ROOM_FOLDER;
+            string fileName = SAVE_NAME;
+
+            // go through and write each tile to the comma-separated file
+            StreamWriter writer = new StreamWriter(saveDir + fileName);
+            for (int y = 0; y < Height; y++)
+            {
+                List<string> row = new List<string>();
+                for (int x = 0; x < Width; x++)
+                    row.Add(tiles[x, y].ToString());
+                writer.WriteLine(String.Join(", ", row) + ((y != Height - 1) ? "," : ""));
+            }
+
+            writer.Close();
+        }
+
+        /// <summary>
+        /// Get the filename under which this room should be saved.
+        /// </summary>
+        /// <param name="saveDir">The directory into which the room is being 
+        /// saved.</param>
+        /// <returns>The filename to save the room as.</returns>
+        private string GetSaveName(string saveDir)
+        {
+            String nextName = "Room.csv";
+            while (Directory.EnumerateFiles(saveDir).Contains(nextName))
+                nextName = String.Concat("Room", nextName);
+            return nextName;
         }
 
         internal void Draw(SpriteBatch spriteBatch)
         {
-            if (ShouldRender()) Render(spriteBatch.GraphicsDevice);
+            if (ShouldRender()) 
+                Render(spriteBatch.GraphicsDevice);
 
             spriteBatch.Draw(texture, new Vector2(0, 0), Color.White);
 
             foreach (GameObject obj in objects)
                 obj.Draw(spriteBatch);
+
+            if (editMode)
+                spriteBatch.DrawString(FontManager.GetFont(FontNames.MAIN_MENU_FONT),
+                    "EDIT MODE", new Vector2((Width - 4) * TILESIZE, (Height - 1) * TILESIZE),
+                    Color.White);
         }
 
         /// <summary>
@@ -149,6 +324,41 @@ namespace CrashNet.Worlds
         }
 
         /// <summary>
+        /// Whether or not the room should be exited.
+        /// </summary>
+        /// <param name="direction">The direction in which to leave the room, or
+        /// Direction.None if the room should not be left in any direction.</param>
+        /// <returns>True if the room should be exited, false otherwise.</returns>
+        public bool ShouldLeave(out Direction direction)
+        {
+            foreach (KeyValuePair<Direction, List<GameObject>> pair in wantingToLeave)
+            {
+                // if the players are both trying to leave in the same direction,
+                // leave in that direction.
+                // TODO: make this subset checking thing into a helper method in a separate
+                // class.
+                if (!GetPlayers().Cast<GameObject>().Except(pair.Value).Any())
+                {
+                    direction = pair.Key;
+                    return true;
+                }
+            }
+
+            direction = Direction.None;
+            return false;
+        }
+
+        /// <summary>
+        /// Cleans up the room behind the players as they leave.
+        /// </summary>
+        public void Leave()
+        {
+            InitializeLeavingObjects();
+            RemovePlayers();
+        }
+
+        #region Object Operations
+        /// <summary>
         /// Adds the given object to the room.
         /// </summary>
         /// <param name="obj">The object to be put in the room.</param>
@@ -157,14 +367,19 @@ namespace CrashNet.Worlds
             objects.Add(obj);
         }
 
+        public void Remove(GameObject obj)
+        {
+            objects.Remove(obj);
+        }
+
         /// <summary>
         /// Keeps the given object within the boundaries of the room.
         /// </summary>
         /// <param name="obj">The object to keep in bounds.</param>
-        private void KeepInBounds(GameObject obj)
+        public void KeepInBounds(GameObject obj)
         {
             obj.Position = Vector2.Clamp(obj.Position, Vector2.Zero,
-                new Vector2(GetWidthInPixels(), GetHeightInPixels()));
+                new Vector2(GetWidthInPixels() - obj.BBox.Width - 1, GetHeightInPixels() - obj.BBox.Height - 1));
         }
 
         /// <summary>
@@ -189,6 +404,13 @@ namespace CrashNet.Worlds
             return (int)(((obj.BBox.X % TILESIZE) + obj.BBox.Width) / TILESIZE);
         }
 
+        /// <summary>
+        /// Check if the given object is at the edge of the room.
+        /// </summary>
+        /// <param name="obj">The object in the room to check.</param>
+        /// <param name="direction">The edge of the room that the object is at, or
+        /// Direction.None if the object is not at the edge of the room.</param>
+        /// <returns>True if the object is at the edge of the room, false otherwise.</returns>
         private bool AtEdge(GameObject obj, out Direction direction)
         {
             // use the center of the object's bounding box as the telltale point of whether or not
@@ -196,6 +418,7 @@ namespace CrashNet.Worlds
             Vector2 coords = GetTileCoordsByPixel(new Vector2(obj.BBox.Center.X, obj.BBox.Center.Y));
             direction = Direction.None;
 
+            // check diagonal edges first
             if (coords.X == 0 && coords.Y == 0)
                 direction = Direction.NorthWest;
             else if (coords.X == Width - 1 && coords.Y == 0)
@@ -204,6 +427,8 @@ namespace CrashNet.Worlds
                 direction = Direction.SouthWest;
             else if (coords.X == Width - 1 && coords.Y == Height - 1)
                 direction = Direction.SouthEast;
+
+            // check the other edges
             else if (coords.X == 0)
                 direction = Direction.West;
             else if (coords.X == Width - 1)
@@ -216,6 +441,24 @@ namespace CrashNet.Worlds
             return direction != Direction.None;
         }
 
+        /// <summary>
+        /// Get the players in the room.
+        /// </summary>
+        /// <returns>A list of the player characters in the room.</returns>
+        public List<Player> GetPlayers()
+        {
+            return objects.Where(x => x is Player).Cast<Player>().ToList();
+        }
+
+        /// <summary>
+        /// Remove the players from the room.
+        /// </summary>
+        private void RemovePlayers()
+        {
+            objects = objects.Where(x => !(x is Player)).ToList();
+        }
+        #endregion
+
         #region Tile Operations
 
         /// <summary>
@@ -223,13 +466,13 @@ namespace CrashNet.Worlds
         /// </summary>
         /// <param name="col">The x-coordinate of the new tile, relative to other tiles.</param>
         /// <param name="row">The y-coordinate of the new tile, relative to other tiles.</param>
-        /// <param name="tile">The new tile.</param>
-        private void SetTile(int col, int row, Tile tile)
+        /// <param name="tiletype">The new tile.</param>
+        private void SetTile(int col, int row, TileType tiletype)
         {
+            Tile tile = new Tile(new Vector2(col * TILESIZE, row * TILESIZE), tiletype);
             if (ValidRow(row) && ValidCol(col))
             {
                 if (tiles == null) tiles = new Tile[Width, Height];
-                tile.Position = new Vector2(col * TILESIZE, row * TILESIZE);
                 tiles[col, row] = tile;
 
                 // determine the part of the map that has not been rendered yet,
@@ -359,6 +602,7 @@ namespace CrashNet.Worlds
         }
         #endregion
 
+        #region Foreground Rendering
         /// <summary>
         /// Renders the texture of the room's foreground.
         /// </summary>
@@ -406,5 +650,6 @@ namespace CrashNet.Worlds
         {
             return unrenderedRegion != Rectangle.Empty;
         }
+        #endregion
     }
 }

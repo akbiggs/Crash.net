@@ -18,6 +18,7 @@
     <XnaOutputType>Game</XnaOutputType>
     <ApplicationIcon>Game.ico</ApplicationIcon>
     <Thumbnail>GameThumbnail.png</Thumbnail>
+    <IsWebBootstrapper>false</IsWebBootstrapper>
     <PublishUrl>publish\</PublishUrl>
     <Install>true</Install>
     <InstallFrom>Disk</InstallFrom>
@@ -30,7 +31,6 @@
     <MapFileExtensions>true</MapFileExtensions>
     <ApplicationRevision>0</ApplicationRevision>
     <ApplicationVersion>1.0.0.%2a</ApplicationVersion>
-    <IsWebBootstrapper>false</IsWebBootstrapper>
     <UseApplicationTrust>false</UseApplicationTrust>
     <BootstrapperEnabled>true</BootstrapperEnabled>
   </PropertyGroup>
@@ -78,9 +78,9 @@
     <Compile Include="Engine\FontManager.cs" />
     <Compile Include="Engine\Input.cs" />
     <Compile Include="Engine\Direction.cs" />
+    <Compile Include="Engine\RoomManager.cs" />
     <Compile Include="GameObjects\Player.cs" />
     <Compile Include="Interface\GameMenu.cs" />
-    <Compile Include="Engine\GameState.cs" />
     <Compile Include="Interface\Map.cs" />
     <Compile Include="GameObjects\GameObject.cs" />
     <Compile Include="Worlds\Room.cs" />
@@ -94,6 +94,7 @@
     <Compile Include="Engine\Renderable.cs" />
     <Compile Include="Engine\TextureManager.cs" />
     <Compile Include="Interface\UserInterface.cs" />
+    <Compile Include="Worlds\WorldGenerator.cs" />
   </ItemGroup>
   <ItemGroup>
     <Content Include="Game.ico" />
@@ -135,6 +136,10 @@
     </BootstrapperPackage>
   </ItemGroup>
   <ItemGroup />
+  <ItemGroup>
+    <None Include="Worlds\Rooms\Partitioned.csv" />
+    <None Include="Worlds\Rooms\Smiley.csv" />
+  </ItemGroup>
   <Import Project="$(MSBuildBinPath)\Microsoft.CSharp.targets" />
   <Import Project="$(MSBuildExtensionsPath)\Microsoft\XNA Game Studio\Microsoft.Xna.GameStudio.targets" />
   <!--

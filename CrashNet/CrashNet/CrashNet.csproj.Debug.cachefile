@@ -1,8 +1,8 @@
-Content\blank.xnb
-Content\enemy.xnb
-Content\ground.xnb
-Content\player_one.xnb
-Content\player_two.xnb
-Content\wall.xnb
-Content\background.xnb
-Content\main_menu_font.xnb
+Content\Textures\blank.xnb
+Content\Textures\enemy.xnb
+Content\Textures\ground.xnb
+Content\Textures\player_one.xnb
+Content\Textures\player_two.xnb
+Content\Textures\wall.xnb
+Content\Textures\background.xnb
+Content\Fonts\main_menu_font.xnb

@@ -2,13 +2,14 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
+using Microsoft.Xna.Framework;
 
 namespace CrashNet
 {
     class Cutscene
     {
 
-        internal void Update()
+        internal void Update(GameTime gameTime)
         {
             throw new NotImplementedException();
         }

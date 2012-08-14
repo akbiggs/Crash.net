@@ -16,15 +16,6 @@ namespace CrashNet.GameObjects
 
         //used for calculating rotation angles
         const float DEFAULT_ROTATION_SPEED = (float)(Math.PI / 20);
-        const double PI = MathHelper.Pi;
-        const double PI_OVER_TWO = MathHelper.PiOver2;
-        const double THREE_PI_OVER_TWO = 1.5 * PI;
-        const double TWO_PI = MathHelper.TwoPi;
-        //diagonals
-        const double PI_OVER_FOUR = MathHelper.PiOver4;
-        const double THREE_PI_OVER_FOUR = 0.75 * PI;
-        const double FIVE_PI_OVER_FOUR = 1.25 * PI;
-        const double SEVEN_PI_OVER_FOUR = 1.75 * PI;
         
         Vector2 position;
         internal Vector2 origin;
@@ -79,8 +70,9 @@ namespace CrashNet.GameObjects
         /// <summary>
         /// Updates the object in the context of the given room.
         /// </summary>
+        /// <param name="gameTime">The game's timer.</param>
         /// <param name="room">The room in which the object is located.</param>
-        internal virtual void Update(Room room)
+        internal virtual void Update(GameTime gameTime, Room room)
         {
             if (ShouldRotate()) Rotate();
         }
@@ -98,22 +90,23 @@ namespace CrashNet.GameObjects
         /// any walls in the room.
         /// </summary>
         /// <param name="direction">The direction to move the object.</param>
+        /// <param name="gameTime">The game's timer.</param>
         /// <param name="room">The room in which the object is moving around.</param>
-        internal virtual void Move(Direction direction, Room room)
+        internal virtual void Move(Direction direction, GameTime gameTime, Room room)
         {
             float xComponent, yComponent;
             if (direction == Direction.None)
                 xComponent = yComponent = 0;
             else
             {
-                float angle = (float)DirectionToRadians(direction);
+                float angle = (float)DirectionOperations.ToRadians(direction);
                 RotateTo(angle);
 
-                // There's this weird arithmetic bug where these produce very small values during movements along
+                // There's this arithmetic bug where sin and cos produce very small values during movements along
                 // the opposite axes, so round them.
-                xComponent = (float)(acceleration.X * Math.Round(Math.Sin(angle), 6));
+                xComponent = (float)(acceleration.X * gameTime.ElapsedGameTime.Milliseconds * Math.Round(Math.Sin(angle), 6));
                 // up is negative, down is positive, so multiply by -1. 
-                yComponent = (float)(-1 * acceleration.Y * Math.Round(Math.Cos(angle), 6));
+                yComponent = (float)(-1 * acceleration.Y * gameTime.ElapsedGameTime.Milliseconds * Math.Round(Math.Cos(angle), 6));
 
             }
             ChangeVelocity(new Vector2(xComponent, yComponent));
@@ -138,6 +131,7 @@ namespace CrashNet.GameObjects
             // 3. go through each intersection, and fix it.
             // Thanks to David Gouveia http://gamedev.stackexchange.com/users/11686/david-gouveia
             Position = new Vector2((float)Math.Round(Position.X + amount), Position.Y);
+            room.KeepInBounds(this);
             List<Tile> collidingWalls = room.GetIntersectingWalls(this);
 
             foreach (Tile tile in collidingWalls)
@@ -166,7 +160,7 @@ namespace CrashNet.GameObjects
             // 3. go through each intersection, and fix it.
             // Thanks to David Gouveia http://gamedev.stackexchange.com/users/11686/david-gouveia
             Position = new Vector2(Position.X, (float)Math.Round(Position.Y + amount));
-
+            room.KeepInBounds(this);
             List<Tile> collidingWalls = room.GetIntersectingWalls(this);
 
             foreach (Tile tile in collidingWalls)
@@ -177,35 +171,6 @@ namespace CrashNet.GameObjects
                     Velocity.Y = 0;
                     Position = new Vector2(Position.X, Position.Y + depth + (WALL_PADDING * Math.Sign(depth)));
                 }
-            }
-        }
-
-        /// <summary>
-        /// Converts the given direction into radians.
-        /// </summary>
-        /// <param name="direction">A direction.</param>
-        /// <returns>The angle of rotation of the direction, in radians.</returns>
-        private double DirectionToRadians(Direction direction)
-        {
-            switch (direction)
-            {
-                case Direction.North:
-                default:
-                    return 0;
-                case Direction.NorthWest:
-                    return SEVEN_PI_OVER_FOUR;
-                case Direction.West:
-                    return THREE_PI_OVER_TWO;
-                case Direction.SouthWest:
-                    return FIVE_PI_OVER_FOUR;
-                case Direction.South:
-                    return PI;
-                case Direction.SouthEast:
-                    return THREE_PI_OVER_FOUR;
-                case Direction.East:
-                    return PI_OVER_TWO;
-                case Direction.NorthEast:
-                    return PI_OVER_FOUR;
             }
         }
 
@@ -259,7 +224,7 @@ namespace CrashNet.GameObjects
             // distance. Do so by adjusting values based on the newAngle and
             // rotation so that one of them is the top of the circle, then determine
             // distance from there.
-            float choice1 = MathHelper.WrapAngle((newAngle - rotation) - (float)TWO_PI);
+            float choice1 = MathHelper.WrapAngle((newAngle - rotation) - (float)MathHelper.TwoPi);
             float choice2 = MathHelper.WrapAngle((newAngle - rotation));
             if (Math.Abs(choice1) < Math.Abs(choice2))
                 rotationChange = (float)(choice1);
@@ -307,6 +272,14 @@ namespace CrashNet.GameObjects
             }
         }
 
+        /// <summary>
+        /// Whether or not this object should collide with another object.
+        /// </summary>
+        /// <param name="other">The other object to check for a collision 
+        /// against.</param>
+        /// <param name="region">The region of collision. An empty bounding box
+        /// if the objects do not collide.</param>
+        /// <returns>True if the objects should collide, false otherwise.</returns>
         public bool ShouldCollide(GameObject other, out BBox region)
         {
             region = BBox.Intersect(other.BBox);

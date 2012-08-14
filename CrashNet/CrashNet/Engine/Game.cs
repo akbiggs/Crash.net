@@ -75,7 +75,7 @@ namespace CrashNet.Engine
             //initializing here because they are dependent on content managers
             background = new Background(Width, Height, TextureManager.GetTexture(TextureNames.BACKGROUND));
 
-            world = new World(WorldNumber.World1);
+            world = WorldGenerator.Generate(WorldNumber.One);
             world.Add(new Player(PlayerNumber.One, new Vector2(200, 200)));
             world.Add(new Player(PlayerNumber.Two, new Vector2(100, 100)));
 
@@ -112,23 +112,23 @@ namespace CrashNet.Engine
             {
                 case GameState.Level:
                 case GameState.Boss:
-                    background.Update();
-                    world.Update();
-                    ui.Update();
+                    background.Update(gameTime);
+                    world.Update(gameTime);
+                    ui.Update(gameTime);
                     break;
 
                 case GameState.Cutscene:
-                    curCutscene.Update();
+                    curCutscene.Update(gameTime);
                     break;
 
                 case GameState.GameMenu:
-                    background.Update();
-                    gameMenu.Update();
+                    background.Update(gameTime);
+                    gameMenu.Update(gameTime);
                     break;
 
                 case GameState.MainMenu:
-                    background.Update();
-                    mainMenu.Update();
+                    background.Update(gameTime);
+                    mainMenu.Update(gameTime);
                     break;
             }
 
@@ -193,5 +193,14 @@ namespace CrashNet.Engine
                 graphics.PreferredBackBufferHeight = height;
             }
         }
+    }
+
+    enum GameState
+    {
+        Cutscene,
+        Level,
+        Boss,
+        GameMenu,
+        MainMenu
     }
 }
