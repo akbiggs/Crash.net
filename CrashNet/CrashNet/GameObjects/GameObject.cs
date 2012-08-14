@@ -70,8 +70,9 @@ namespace CrashNet.GameObjects
         /// <summary>
         /// Updates the object in the context of the given room.
         /// </summary>
+        /// <param name="gameTime">The game's timer.</param>
         /// <param name="room">The room in which the object is located.</param>
-        internal virtual void Update(Room room)
+        internal virtual void Update(GameTime gameTime, Room room)
         {
             if (ShouldRotate()) Rotate();
         }
@@ -89,8 +90,9 @@ namespace CrashNet.GameObjects
         /// any walls in the room.
         /// </summary>
         /// <param name="direction">The direction to move the object.</param>
+        /// <param name="gameTime">The game's timer.</param>
         /// <param name="room">The room in which the object is moving around.</param>
-        internal virtual void Move(Direction direction, Room room)
+        internal virtual void Move(Direction direction, GameTime gameTime, Room room)
         {
             float xComponent, yComponent;
             if (direction == Direction.None)
@@ -102,9 +104,9 @@ namespace CrashNet.GameObjects
 
                 // There's this arithmetic bug where sin and cos produce very small values during movements along
                 // the opposite axes, so round them.
-                xComponent = (float)(acceleration.X * Math.Round(Math.Sin(angle), 6));
+                xComponent = (float)(acceleration.X * gameTime.ElapsedGameTime.Milliseconds * Math.Round(Math.Sin(angle), 6));
                 // up is negative, down is positive, so multiply by -1. 
-                yComponent = (float)(-1 * acceleration.Y * Math.Round(Math.Cos(angle), 6));
+                yComponent = (float)(-1 * acceleration.Y * gameTime.ElapsedGameTime.Milliseconds * Math.Round(Math.Cos(angle), 6));
 
             }
             ChangeVelocity(new Vector2(xComponent, yComponent));

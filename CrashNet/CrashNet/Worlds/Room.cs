@@ -191,7 +191,7 @@ namespace CrashNet.Worlds
         /// <summary>
         /// Updates the room.
         /// </summary>
-        internal virtual void Update()
+        internal virtual void Update(GameTime gameTime)
         {
             #region LEVEL EDITOR
 
@@ -220,12 +220,12 @@ namespace CrashNet.Worlds
             #endregion
 
             foreach (Tile tile in tiles)
-                tile.Update(this);
+                tile.Update(gameTime, this);
 
             foreach (GameObject obj in objects)
             {
                 // update and keep in boundaries of stage
-                obj.Update(this);
+                obj.Update(gameTime, this);
                 KeepInBounds(obj);
 
                 // check if the object wants to leave the room,

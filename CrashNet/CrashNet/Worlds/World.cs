@@ -70,9 +70,9 @@ namespace CrashNet
         /// <summary>
         /// Update the world.
         /// </summary>
-        internal void Update()
+        internal void Update(GameTime gameTime)
         {
-            curRoom.Update();
+            curRoom.Update(gameTime);
             Direction leavingDirection;
             if (curRoom.ShouldLeave(out leavingDirection))
             {

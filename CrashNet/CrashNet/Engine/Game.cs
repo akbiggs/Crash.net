@@ -112,23 +112,23 @@ namespace CrashNet.Engine
             {
                 case GameState.Level:
                 case GameState.Boss:
-                    background.Update();
-                    world.Update();
-                    ui.Update();
+                    background.Update(gameTime);
+                    world.Update(gameTime);
+                    ui.Update(gameTime);
                     break;
 
                 case GameState.Cutscene:
-                    curCutscene.Update();
+                    curCutscene.Update(gameTime);
                     break;
 
                 case GameState.GameMenu:
-                    background.Update();
-                    gameMenu.Update();
+                    background.Update(gameTime);
+                    gameMenu.Update(gameTime);
                     break;
 
                 case GameState.MainMenu:
-                    background.Update();
-                    mainMenu.Update();
+                    background.Update(gameTime);
+                    mainMenu.Update(gameTime);
                     break;
             }
 

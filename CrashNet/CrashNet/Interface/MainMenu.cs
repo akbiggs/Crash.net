@@ -8,7 +8,7 @@ namespace CrashNet
 {
     class MainMenu : Menu
     {
-        internal void Update()
+        internal void Update(GameTime gameTime)
         {
         }
 

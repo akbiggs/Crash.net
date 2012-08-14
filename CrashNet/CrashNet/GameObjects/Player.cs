@@ -55,7 +55,7 @@ namespace CrashNet.GameObjects
             }
         }
 
-        internal override void Update(Room room)
+        internal override void Update(GameTime gameTime, Room room)
         {
             if (IsAlive)
             {
@@ -70,9 +70,9 @@ namespace CrashNet.GameObjects
                     directions.Add(Direction.East);
 
                 Direction direction = DirectionOperations.Combine(directions);
-                Move(direction, room);
+                Move(direction, gameTime, room);
 
-                base.Update(room);
+                base.Update(gameTime, room);
             }
         }
 
