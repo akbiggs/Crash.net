@@ -19,16 +19,22 @@ namespace CrashNet.ParticleSystem
         /**
          * Members
          **/
+        internal const String DIR = "Content\\EffectsXMLs\\";
 
+        // Player who fired this thing:
+        GameObject owner;
         /**
          * Special effects emitters used on launch, during flight,
          * and upon collision with other gameobject.
          **/
-        XNAEmitter OnFireFXEmitter;
-        XNAEmitter InFlightFXEmitter;
-        XNAEmitter OnCollisionFXEmitter;
+        internal XNAEmitter OnFireFXEmitter;
+        internal XNAEmitter InFlightFXEmitter;
+        internal XNAEmitter OnCollisionFXEmitter;
+
+        private bool HasCollided = false;
 
         public Projectile(
+            GameObject owner,
             Vector2 position,
             Vector2 origin,
             Vector2 initialVelocity,
@@ -36,7 +42,7 @@ namespace CrashNet.ParticleSystem
             Vector2 acceleration,
             Vector2 deceleration,
             Texture2D texture,
-            CrashNet.Engine.Game parent, 
+            /**CrashNet.Engine.Game parent,**/ 
             String XMLFile1, // OnFireFXEmitter xml file
             String XMLFile2, // InFlightFXEmitter xml file
             String XMLFile3, // OnCollisionFXEmitter xml file
@@ -46,9 +52,10 @@ namespace CrashNet.ParticleSystem
             double particleScaling = 1.0) 
             : base(position, origin, initialVelocity, maxSpeed, acceleration, deceleration, texture, rotation, rotationSpeed)
         {
-            OnFireFXEmitter = new XNAEmitter(parent, position, XMLFile1, particleLevel, particleScaling);
-            InFlightFXEmitter = new XNAEmitter(parent, position, XMLFile2, particleLevel, particleScaling);
-            OnCollisionFXEmitter = new XNAEmitter(parent, position, XMLFile3, particleLevel, particleScaling);
+            this.owner = owner;
+            OnFireFXEmitter = new XNAEmitter(/**parent,**/ position, XMLFile1, particleLevel, particleScaling);
+            InFlightFXEmitter = new XNAEmitter(/**parent,**/ position, XMLFile2, particleLevel, particleScaling);
+            OnCollisionFXEmitter = new XNAEmitter(/**parent,**/ position, XMLFile3, particleLevel, particleScaling);
         }
 
         /**
@@ -67,24 +74,37 @@ namespace CrashNet.ParticleSystem
          **/
         internal void OnCollision()
         {
+            HasCollided = true;
             InFlightFXEmitter.Stop();
             OnCollisionFXEmitter.Start();
+        }
+
+        internal override bool IsAlive()
+        {
+            return (OnFireFXEmitter.IsAlive()
+                || InFlightFXEmitter.IsAlive()
+                || OnCollisionFXEmitter.IsAlive()
+                || (!HasCollided)
+                );
         }
 
         /**
          * Update override.
          **/
-        internal void Update(GameTime gameTime, Room room)
+        internal override void Update(GameTime gameTime, Room room)
         {
+            if (!IsAlive())
+                room.RemoveAfterUpdate(this);
             /**
              * Move the projectile:
              **/
-            Move(room);
+            if (!HasCollided)
+                Move(room);
 
             /**
              * Update the special effects:
              **/
-            OnFireFXEmitter.SetLocation(Position);
+            
             OnFireFXEmitter.Update(gameTime.ElapsedGameTime.Milliseconds);
             InFlightFXEmitter.SetLocation(Position);
             InFlightFXEmitter.Update(gameTime.ElapsedGameTime.Milliseconds);
@@ -98,8 +118,11 @@ namespace CrashNet.ParticleSystem
          **/
         public override void Collide(GameObject other, BBox region)
         {
-            OnCollision();
-            base.Collide(other, region);
+            if (!HasCollided && (!other.Equals(owner)))
+            {
+                OnCollision();
+                base.Collide(other, region);
+            }
         }
 
         /**
@@ -109,10 +132,12 @@ namespace CrashNet.ParticleSystem
          **/
         internal override void Draw(SpriteBatch spriteBatch)
         {
+          
             OnFireFXEmitter.Draw(spriteBatch);
             InFlightFXEmitter.Draw(spriteBatch);
             OnCollisionFXEmitter.Draw(spriteBatch);
-            base.Draw(spriteBatch);
+            if (HasCollided)
+                base.Draw(spriteBatch);
         }
         
     }

@@ -12,7 +12,7 @@ namespace CrashNet.ParticleSystem
 {
     class XNAEmitter : ParticleEmitter
     {
-        Game parent;
+        /**Game parent;**/
         SpriteEffects spriteEffects = SpriteEffects.None;
         BlendState blendState = BlendState.Additive;
         SpriteSortMode spriteSortMode = SpriteSortMode.Deferred;
@@ -25,11 +25,11 @@ namespace CrashNet.ParticleSystem
          * XML-based contructor. Initializes emitter
          * with parameters from xmlFileName.
          **/
-        public XNAEmitter(Game p, Vector2 location, String xmlFileName, double pLevel = 1.0, double pScaling = 1.0) : base(pLevel, pScaling)
+        public XNAEmitter(/**Game p,**/ Vector2 location, String xmlFileName, double pLevel = 1.0, double pScaling = 1.0) : base(pLevel, pScaling)
         {
             XmlDocument doc = new XmlDocument();
             Location = new Vector3D(location.X, location.Y, 0);
-            parent = p;
+            /**parent = p;**/
             doc.Load(xmlFileName);
             LoadXMLEmitter(doc);
             LoadXNAXMLParameters(doc);
@@ -129,7 +129,12 @@ namespace CrashNet.ParticleSystem
 
             foreach (XmlNode texture in XNAPars.SelectSingleNode("textureList"))
             {
+                /** Old way of doing it using Game class:
                 Texture2D n = parent.Content.Load<Texture2D>(
+                    Convert.ToString(texture.Attributes.GetNamedItem("x").Value));
+                 * **/
+                // New way using TextureManager class:
+                Texture2D n = TextureManager.GetTexture(
                     Convert.ToString(texture.Attributes.GetNamedItem("x").Value));
                 
                 LoadTexture(n);
@@ -172,7 +177,7 @@ namespace CrashNet.ParticleSystem
         {
             
             Texture2D DrawTexture = particleTexture;
-
+            spriteBatch.End();
             spriteBatch.Begin(spriteSortMode, blendState);
             foreach (Particle p in particles)
             {
@@ -185,7 +190,7 @@ namespace CrashNet.ParticleSystem
                     spriteBatch.Draw(DrawTexture, 
                         new Vector2((float)p.position.X, (float)p.position.Y), 
                         new Rectangle(0,0, particleTexture.Width, particleTexture.Height), 
-                        new Color((float)p.color.X, (float)p.color.Y, (float)p.color.Z, (float)p.transparency), 
+                        new Color((Single)p.color.X, (Single)p.color.Y, (Single)p.color.Z, (Single)p.transparency), 
                         (float)p.angle,
                         new Vector2(particleTexture.Width / 2, particleTexture.Height / 2), 
                         (float)p.size, 
@@ -193,8 +198,8 @@ namespace CrashNet.ParticleSystem
 
                 }
             }
-
             spriteBatch.End();
+            spriteBatch.Begin();
             
         }
     }

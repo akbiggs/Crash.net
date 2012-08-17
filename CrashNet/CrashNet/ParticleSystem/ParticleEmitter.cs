@@ -338,10 +338,10 @@ namespace CrashNet.ParticleSystem
                 (int)(GlobalParticleLevels * Convert.ToInt32(emitterPars.SelectSingleNode("emitRate").
                 Attributes.GetNamedItem("x").Value));
             MeanEmitDelay =
-                Convert.ToInt32(emitterPars.SelectSingleNode("meanEmitDelay").
+                Convert.ToDouble(emitterPars.SelectSingleNode("meanEmitDelay").
                 Attributes.GetNamedItem("x").Value);
             EmitLifetime =
-                Convert.ToInt32(emitterPars.SelectSingleNode("emitterLifetime").
+                Convert.ToDouble(emitterPars.SelectSingleNode("emitterLifetime").
                 Attributes.GetNamedItem("x").Value);
             PermanentParticles =
                 Convert.ToBoolean(emitterPars.SelectSingleNode("permanentParticles").

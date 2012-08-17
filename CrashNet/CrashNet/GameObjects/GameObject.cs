@@ -125,7 +125,7 @@ namespace CrashNet.GameObjects
 
             x = (float)(magnitudex * Math.Round(Math.Sin(theta), 6));
             y = (float)(-1 * magnitudey * Math.Round(Math.Cos(theta), 6));
-            return new Vector2((float)x, (float)y);
+            return new Vector2(x, y);
         }
 
         /**
@@ -310,6 +310,20 @@ namespace CrashNet.GameObjects
         }
 
         /// <summary>
+        /// Used during room update method to determine
+        /// if this GameObject should be removed from
+        /// room's GameObject list.
+        /// Assumes objects are permanent.
+        /// Descendant child-classes should override
+        /// if they are not permanent.
+        /// </summary>
+        /// <returns></returns>
+        internal virtual bool IsAlive()
+        {
+            return true;
+        }
+
+        /// <summary>
         /// Resolves the collision in a region between this object
         /// and another.
         /// </summary>
@@ -331,6 +345,8 @@ namespace CrashNet.GameObjects
                 if (BBox != null) BBox.Position = value;
             }
         }
+
+        
 
         /// <summary>
         /// The texture of the object.

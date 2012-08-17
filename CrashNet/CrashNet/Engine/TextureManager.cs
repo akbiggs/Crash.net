@@ -33,7 +33,11 @@ namespace CrashNet
             TextureNames.BACKGROUND,
 
             // Misc.
-            TextureNames.BLANK
+            TextureNames.BLANK,
+            TextureNames.BOOMSTICK_BULLET,
+            TextureNames.FIRE,
+            TextureNames.SMOKE,
+            TextureNames.SQUARE_PARTICLE
         };
 
         /// <summary>
@@ -127,5 +131,9 @@ namespace CrashNet
         public const string WALL = "wall";
         public const string BACKGROUND = "background";
         public const string BLANK = "blank";
+        public const string BOOMSTICK_BULLET = "boom_bullet";
+        public const string FIRE = "fire";
+        public const string SMOKE = "smoke";
+        public const string SQUARE_PARTICLE = "square_particle";
     }
 }

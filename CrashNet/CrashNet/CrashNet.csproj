@@ -91,6 +91,7 @@
     <Compile Include="ParticleSystem\Particle.cs" />
     <Compile Include="ParticleSystem\ParticleEmitter.cs" />
     <Compile Include="ParticleSystem\Projectile.cs" />
+    <Compile Include="ParticleSystem\Weapons\BoomStick.cs" />
     <Compile Include="ParticleSystem\XNAEmitter.cs" />
     <Compile Include="Worlds\Room.cs" />
     <Compile Include="Worlds\Tile.cs" />

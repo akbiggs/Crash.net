@@ -10,8 +10,8 @@ namespace CrashNet.Worlds
     class Tile : GameObject
     {
         // string representations
-        const string GROUND = "G";
-        const string WALL = "W";
+        public const string GROUND = "G";
+        public const string WALL = "W";
 
         TileType type;
 

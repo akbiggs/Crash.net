@@ -7,6 +7,7 @@ using Microsoft.Xna.Framework.Input;
 using CrashNet.Engine;
 using CrashNet.Worlds;
 using CrashNet.ParticleSystem;
+using CrashNet.ParticleSystem.Weapons;
 
 namespace CrashNet.GameObjects
 {
@@ -102,6 +103,13 @@ namespace CrashNet.GameObjects
              * except for position and an initial velocity. These will
              * be taken from the player's position and facing.
              **/
+            
+            room.AddAfterUpdate(new BoomStick(this,
+                Position,
+                GetXYComponents(currentDirection,
+                    BoomStick.INITIAL_VELOCITY_X, 
+                    BoomStick.INITIAL_VELOCITY_Y),
+                TextureManager.GetTexture(TextureNames.BOOMSTICK_BULLET)));
          
         }
 
