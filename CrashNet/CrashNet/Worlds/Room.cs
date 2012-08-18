@@ -46,6 +46,17 @@ namespace CrashNet.Worlds
         List<GameObject> objects;
 
         /// <summary>
+        /// Objects being added to room after update cycle. 
+        /// </summary>
+        List<GameObject> addedObjects;
+
+        /// <summary>
+        /// Objects to be removed from room after
+        /// update cycle.
+        /// </summary>
+        List<GameObject> removedObjects;
+
+        /// <summary>
         /// All of the objects that want to leave the room.
         /// </summary>
         Dictionary<Direction, List<GameObject>> wantingToLeave;
@@ -82,6 +93,8 @@ namespace CrashNet.Worlds
             this.Height = height;
 
             this.objects = new List<GameObject>();
+            this.addedObjects = new List<GameObject>();
+            this.removedObjects = new List<GameObject>();
             InitializeLeavingObjects();
             
             tiles = new Tile[Width, Height];
@@ -222,33 +235,82 @@ namespace CrashNet.Worlds
             foreach (Tile tile in tiles)
                 tile.Update(gameTime, this);
 
-            foreach (GameObject obj in objects)
+            for (int i = 0; i < objects.Count; i++)
             {
-                // update and keep in boundaries of stage
-                obj.Update(gameTime, this);
-                KeepInBounds(obj);
-
-                // check if the object wants to leave the room,
-                // update our leaving tracker if it does.
-                Direction leavingDirection = Direction.None;
-                if (AtEdge(obj, out leavingDirection))
-                    wantingToLeave[leavingDirection].Add(obj);
-
-                // it does not want to leave in more than one direction,
-                // and if it no longer wants to leave the room remove it from the
-                // tracker.
-                foreach (Direction direction in Enum.GetValues(typeof(Direction)))
-                    if (direction != leavingDirection)
-                        wantingToLeave[direction].Remove(obj);
-
-                // collide with any other objects in the room
-                foreach (GameObject other in objects)
+                /**
+                 * If object is alive, update it.
+                 * Otherwise, add to the remove queue.
+                 **/
+                if (objects[i].IsAlive())
                 {
-                    BBox region;
-                    if (obj != other && obj.ShouldCollide(other, out region))
-                        obj.Collide(other, region);
+                    // update and keep in boundaries of stage
+                    objects[i].Update(gameTime, this);
+                    KeepInBounds(objects[i]);
+
+                    // check if the object wants to leave the room,
+                    // update our leaving tracker if it does.
+                    Direction leavingDirection = Direction.None;
+                    if (AtEdge(objects[i], out leavingDirection))
+                        wantingToLeave[leavingDirection].Add(objects[i]);
+
+                    // it does not want to leave in more than one direction,
+                    // and if it no longer wants to leave the room remove it from the
+                    // tracker.
+                    foreach (Direction direction in Enum.GetValues(typeof(Direction)))
+                        if (direction != leavingDirection)
+                            wantingToLeave[direction].Remove(objects[i]);
+
+                    // collide with any other objects in the room
+                    foreach (GameObject other in objects)
+                    {
+                        BBox region;
+                        if (objects[i] != other && objects[i].ShouldCollide(other, out region))
+                            objects[i].Collide(other, region);
+                    }
+                    /**
+                     * Collide with walls in the room
+                     **/
+                    /**
+                     * Possibly unnecessary since collision detection with
+                     * walls is handled in GameObject's ChangeY/XPosition
+                     * method.
+                     *
+                    foreach (Tile tile in tiles)
+                    {
+                        BBox region;
+                        if ((objects[i] != tile) && tile.GetTileType() == TileType.Wall)
+                        {
+                            if (objects[i].ShouldCollide(tile, out region))
+                                objects[i].Collide(tile, region);
+                        }
+                    }**/
+                }
+                else // If object is not alive:
+                {
+                    // Add object to remove queue.
+                    removedObjects.Add(objects[i]);
                 }
             }
+
+            /**
+             * Add queued objects to room object list.
+             **/
+            foreach (GameObject obj in addedObjects)
+            {
+                objects.Add(obj);
+            }
+            // Clear queued objects:
+            addedObjects.Clear();
+
+            /**
+             * Removed remove-queued objects.
+             **/
+            foreach (GameObject obj in removedObjects)
+            {
+                objects.Remove(obj);
+            }
+            // Clear queued objects:
+            removedObjects.Clear();
         }
 
         /// <summary>
@@ -359,7 +421,7 @@ namespace CrashNet.Worlds
 
         #region Object Operations
         /// <summary>
-        /// Adds the given object to the room.
+        /// Adds the given object to the objects list.
         /// </summary>
         /// <param name="obj">The object to be put in the room.</param>
         public void Add(GameObject obj)
@@ -367,9 +429,24 @@ namespace CrashNet.Worlds
             objects.Add(obj);
         }
 
+        /// <summary>
+        /// Adds given object to addedObjects queue.
+        /// AddedObjects get added to room after
+        /// the current update cycle.
+        /// </summary>
+        public void AddAfterUpdate(GameObject obj)
+        {
+            addedObjects.Add(obj);
+        }
+
         public void Remove(GameObject obj)
         {
             objects.Remove(obj);
+        }
+
+        public void RemoveAfterUpdate(GameObject obj)
+        {
+            removedObjects.Add(obj);
         }
 
         /// <summary>
