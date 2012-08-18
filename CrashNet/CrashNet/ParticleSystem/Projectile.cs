@@ -100,7 +100,7 @@ namespace CrashNet.ParticleSystem
              **/
             if (!HasCollided)
                 Move(room);
-
+         
             /**
              * Update the special effects:
              **/
@@ -121,7 +121,7 @@ namespace CrashNet.ParticleSystem
             if (!HasCollided && (!other.Equals(owner)))
             {
                 OnCollision();
-                base.Collide(other, region);
+                /**base.Collide(other, region);**/
             }
         }
 
@@ -132,12 +132,13 @@ namespace CrashNet.ParticleSystem
          **/
         internal override void Draw(SpriteBatch spriteBatch)
         {
-          
+
+            if (!HasCollided)
+                base.Draw(spriteBatch);
             OnFireFXEmitter.Draw(spriteBatch);
             InFlightFXEmitter.Draw(spriteBatch);
             OnCollisionFXEmitter.Draw(spriteBatch);
-            if (HasCollided)
-                base.Draw(spriteBatch);
+            
         }
         
     }

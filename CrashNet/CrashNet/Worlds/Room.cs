@@ -235,49 +235,60 @@ namespace CrashNet.Worlds
             foreach (Tile tile in tiles)
                 tile.Update(gameTime, this);
 
-            foreach (GameObject obj in objects)
+            for (int i = 0; i < objects.Count; i++)
             {
                 /**
                  * If object is alive, update it.
                  * Otherwise, add to the remove queue.
                  **/
-                if (obj.IsAlive())
+                if (objects[i].IsAlive())
                 {
                     // update and keep in boundaries of stage
-                    obj.Update(gameTime, this);
-                    KeepInBounds(obj);
+                    objects[i].Update(gameTime, this);
+                    KeepInBounds(objects[i]);
 
                     // check if the object wants to leave the room,
                     // update our leaving tracker if it does.
                     Direction leavingDirection = Direction.None;
-                    if (AtEdge(obj, out leavingDirection))
-                        wantingToLeave[leavingDirection].Add(obj);
+                    if (AtEdge(objects[i], out leavingDirection))
+                        wantingToLeave[leavingDirection].Add(objects[i]);
 
                     // it does not want to leave in more than one direction,
                     // and if it no longer wants to leave the room remove it from the
                     // tracker.
                     foreach (Direction direction in Enum.GetValues(typeof(Direction)))
                         if (direction != leavingDirection)
-                            wantingToLeave[direction].Remove(obj);
+                            wantingToLeave[direction].Remove(objects[i]);
 
                     // collide with any other objects in the room
                     foreach (GameObject other in objects)
                     {
                         BBox region;
-                        if (obj != other && obj.ShouldCollide(other, out region))
-                            obj.Collide(other, region);
+                        if (objects[i] != other && objects[i].ShouldCollide(other, out region))
+                            objects[i].Collide(other, region);
                     }
+                    /**
+                     * Collide with walls in the room
+                     **/
+                    /**
+                     * Possibly unnecessary since collision detection with
+                     * walls is handled in GameObject's ChangeY/XPosition
+                     * method.
+                     *
                     foreach (Tile tile in tiles)
                     {
                         BBox region;
-                        if ((obj != tile) && (tile.ToString() == Tile.WALL) && obj.ShouldCollide(tile, out region))
-                            obj.Collide(tile, region);
-                    }
+                        if ((objects[i] != tile) && tile.GetTileType() == TileType.Wall)
+                        {
+                            if (objects[i].ShouldCollide(tile, out region))
+                                objects[i].Collide(tile, region);
+                        }
+                    }**/
                 }
                 else // If object is not alive:
                 {
                     // Add object to remove queue.
-                    removedObjects.Add(obj);
+                    removedObjects.Add(objects[i]);
                 }
             }
 

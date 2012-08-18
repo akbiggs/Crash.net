@@ -14,9 +14,9 @@
     <location x="300" y="350" z="0"></location>
     <dimension x="25" y="25" z="0"></dimension>
     <maxNumParticles x="500"></maxNumParticles>
-    <emitRate x="5"></emitRate>
+    <emitRate x="10"></emitRate>
     <meanEmitDelay x="0.1"></meanEmitDelay>
-    <emitterLifetime x="500"></emitterLifetime>
+    <emitterLifetime x="1000"></emitterLifetime>
     <permanentParticles x="false"></permanentParticles>
   </EmitterParameters>
   <!-- Random parameters for particle generation go here:-->
@@ -41,7 +41,7 @@
 
 
     <color>
-    <alpha x="0" y="0" z="0"></alpha>
+    <alpha x="0" y="0" z="200"></alpha>
     <beta x="255" y="255" z="255"></beta>
     <distribution x="Uniform"></distribution>
     </color>
@@ -49,7 +49,7 @@
     <angle alpha="0" beta="1.0" distribution="Uniform"></angle>
     <angularVelocity alpha="0.25" beta="0.5" distribution="Uniform"></angularVelocity>
     <transparency alpha="0.75" beta="1.0" distribution="Uniform"></transparency>
-    <transparencyDelta alpha="-5.0" beta="-2.5" distribution="Uniform"></transparencyDelta>
+    <transparencyDelta alpha="-3.0" beta="-2.5" distribution="Uniform"></transparencyDelta>
     <size alpha="1.00" beta="0.05" distribution="Normal"></size>
     <growth alpha="0.0" beta="0.1" distribution="Uniform"></growth>
     <ttl alpha="1000" beta="100" distribution="Normal"></ttl>

@@ -4,6 +4,7 @@ using System.Linq;
 using System.Text;
 using Microsoft.Xna.Framework;
 using CrashNet.GameObjects;
+using CrashNet.Engine;
 
 namespace CrashNet.Worlds
 {
@@ -36,6 +37,9 @@ namespace CrashNet.Worlds
             Vector2.Zero, TextureManager.GetTexture(type))
         {
             this.type = type;
+            this.BBox = new BBox(position, 
+                TextureManager.GetTexture(type).Width, 
+                TextureManager.GetTexture(type).Height);
         }
 
         public Color[,] GetColors()

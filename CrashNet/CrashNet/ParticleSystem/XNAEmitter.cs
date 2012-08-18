@@ -189,8 +189,8 @@ namespace CrashNet.ParticleSystem
                     }
                     spriteBatch.Draw(DrawTexture, 
                         new Vector2((float)p.position.X, (float)p.position.Y), 
-                        new Rectangle(0,0, particleTexture.Width, particleTexture.Height), 
-                        new Color((Single)p.color.X, (Single)p.color.Y, (Single)p.color.Z, (Single)p.transparency), 
+                        new Rectangle(0,0, particleTexture.Width, particleTexture.Height),
+                        new Color((int)p.color.X, (int)p.color.Y, (int)p.color.Z, (int)(p.transparency * 255)), 
                         (float)p.angle,
                         new Vector2(particleTexture.Width / 2, particleTexture.Height / 2), 
                         (float)p.size, 
