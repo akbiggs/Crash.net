@@ -6,6 +6,8 @@ using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Input;
 using CrashNet.Engine;
 using CrashNet.Worlds;
+using CrashNet.ParticleSystem;
+using CrashNet.ParticleSystem.Weapons;
 
 namespace CrashNet.GameObjects
 {
@@ -20,7 +22,12 @@ namespace CrashNet.GameObjects
         const float DECELERATION_Y = 4;
 
         PlayerNumber playerNumber;
-        Keys Up, Down, Left, Right;
+        Keys Up, Down, Left, Right, Fire;
+        /**
+         * Added a direction to keep track of player facing for
+         * the purpose of projectile firin'
+         **/
+        Direction currentDirection;
 
         bool IsAlive = true;
 
@@ -45,6 +52,7 @@ namespace CrashNet.GameObjects
                 Down = Keys.Down;
                 Right = Keys.Right;
                 Left = Keys.Left;
+                Fire = Keys.RightControl;
             }
             else
             {
@@ -52,6 +60,7 @@ namespace CrashNet.GameObjects
                 Down = Keys.S;
                 Right = Keys.D;
                 Left = Keys.A;
+                Fire = Keys.LeftControl;
             }
         }
 
@@ -71,9 +80,37 @@ namespace CrashNet.GameObjects
 
                 Direction direction = DirectionOperations.Combine(directions);
                 Move(direction, gameTime, room);
-
+                if (direction != Direction.None)
+                    currentDirection = direction;
+                
+                if (Input.KeyboardTapped(Fire))
+                    FireProjectile(room);
+                
                 base.Update(gameTime, room);
             }
+        }
+
+        /**
+         * Adds a projectile to the room's GameObject queue if
+         * fire conditions are met. Ie: Not firing too frequently,
+         * player isn't dead, etc.
+         **/
+        private void FireProjectile(Room room)
+        {
+            /** 
+             * Projectiles will be added from pre-defined classes 
+             * which have all of their parameters already set 
+             * except for position and an initial velocity. These will
+             * be taken from the player's position and facing.
+             **/
+            
+            room.AddAfterUpdate(new BoomStick(this,
+                Position,
+                GetXYComponents(currentDirection,
+                    BoomStick.INITIAL_VELOCITY_X, 
+                    BoomStick.INITIAL_VELOCITY_Y),
+                TextureManager.GetTexture(TextureNames.BOOMSTICK_BULLET)));
+         
         }
 
         /// <summary>

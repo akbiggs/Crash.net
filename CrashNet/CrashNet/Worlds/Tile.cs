@@ -4,14 +4,15 @@ using System.Linq;
 using System.Text;
 using Microsoft.Xna.Framework;
 using CrashNet.GameObjects;
+using CrashNet.Engine;
 
 namespace CrashNet.Worlds
 {
     class Tile : GameObject
     {
         // string representations
-        const string GROUND = "G";
-        const string WALL = "W";
+        public const string GROUND = "G";
+        public const string WALL = "W";
 
         TileType type;
 
@@ -36,6 +37,9 @@ namespace CrashNet.Worlds
             Vector2.Zero, TextureManager.GetTexture(type))
         {
             this.type = type;
+            this.BBox = new BBox(position, 
+                TextureManager.GetTexture(type).Width, 
+                TextureManager.GetTexture(type).Height);
         }
 
         public Color[,] GetColors()

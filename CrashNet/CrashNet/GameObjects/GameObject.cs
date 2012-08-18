@@ -12,18 +12,18 @@ namespace CrashNet.GameObjects
     class GameObject
     {
         //how much the player should be kept away from any walls
-        const float WALL_PADDING = 0.1f;
+        internal const float WALL_PADDING = 0.1f;
 
         //used for calculating rotation angles
-        const float DEFAULT_ROTATION_SPEED = (float)(Math.PI / 20);
+        internal const float DEFAULT_ROTATION_SPEED = (float)(Math.PI / 20);
         
-        Vector2 position;
+        internal Vector2 position;
         internal Vector2 origin;
 
         /// <summary>
         /// The velocity of the object.
         /// </summary>
-        public Vector2 Velocity;
+        internal Vector2 Velocity;
         Vector2 maxVelocity;
         Vector2 acceleration;
         Vector2 deceleration;
@@ -65,6 +65,7 @@ namespace CrashNet.GameObjects
 
             this.rotation = rotation;
             this.rotationSpeed = rotationSpeed;
+            
         }
 
         /// <summary>
@@ -110,6 +111,29 @@ namespace CrashNet.GameObjects
 
             }
             ChangeVelocity(new Vector2(xComponent, yComponent));
+            Move(room);
+                
+        }
+
+        /**
+         * Returns x,y component vector from the specified direction and speed.
+         * NOTE: Can use this Move() method above.
+         **/
+        internal Vector2 GetXYComponents(Direction dir, float magnitudex, float magnitudey)
+        {
+            float x, y, theta;
+            theta = (float)DirectionOperations.ToRadians(dir);
+
+            x = (float)(magnitudex * Math.Round(Math.Sin(theta), 6));
+            y = (float)(-1 * magnitudey * Math.Round(Math.Cos(theta), 6));
+            return new Vector2(x, y);
+        }
+
+        /**
+         * Moves GameObject based on its current velocity.
+         **/ 
+        internal virtual void Move(Room room)
+        {
             if (Velocity.X != 0)
                 ChangeXPosition(Velocity.X, room);
             if (Velocity.Y != 0)
@@ -139,8 +163,11 @@ namespace CrashNet.GameObjects
                 float depth = BBox.GetHorizontalIntersectionDepth(BBox, tile.BBox);
                 if (depth != 0)
                 {
+                    BBox region;
                     Velocity.X = 0;
                     Position = new Vector2(Position.X + depth + (WALL_PADDING * Math.Sign(depth)), Position.Y);
+                    region = BBox.Intersect(tile.BBox);
+                    this.Collide(tile, region);
                 }
             }
         }
@@ -168,8 +195,11 @@ namespace CrashNet.GameObjects
                 float depth = BBox.GetVerticalIntersectionDepth(BBox, tile.BBox);
                 if (depth != 0)
                 {
+                    BBox region;
                     Velocity.Y = 0;
                     Position = new Vector2(Position.X, Position.Y + depth + (WALL_PADDING * Math.Sign(depth)));
+                    region = BBox.Intersect(tile.BBox);
+                    this.Collide(tile, region);
                 }
             }
         }
@@ -280,10 +310,24 @@ namespace CrashNet.GameObjects
         /// <param name="region">The region of collision. An empty bounding box
         /// if the objects do not collide.</param>
         /// <returns>True if the objects should collide, false otherwise.</returns>
-        public bool ShouldCollide(GameObject other, out BBox region)
+        internal bool ShouldCollide(GameObject other, out BBox region)
         {
             region = BBox.Intersect(other.BBox);
             return !region.IsEmpty();
+        }
+
+        /// <summary>
+        /// Used during room update method to determine
+        /// if this GameObject should be removed from
+        /// room's GameObject list.
+        /// Assumes objects are permanent.
+        /// Descendant child-classes should override
+        /// if they are not permanent.
+        /// </summary>
+        /// <returns></returns>
+        internal virtual bool IsAlive()
+        {
+            return true;
         }
 
         /// <summary>
@@ -308,6 +352,8 @@ namespace CrashNet.GameObjects
                 if (BBox != null) BBox.Position = value;
             }
         }
+
+        
 
         /// <summary>
         /// The texture of the object.
