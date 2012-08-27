@@ -27,9 +27,9 @@ namespace CrashNet.ParticleSystem.Weapons
         internal const double PARTICLE_SCALING = 0.5f;
         internal const double PARTICLE_LEVELS = 1.0f;
 
-        const String ONFIREXML = "BoomOnFire.xml";
-        const String INFLIGHTXML = "BoomInFlight.xml";
-        const String ONCOLLISIONXML = "BoomOnCollision.xml";
+        const String ON_FIRE_XML = "BoomOnFire.xml";
+        const String IN_FLIGHT_XML = "BoomInFlight.xml";
+        const String ON_COLLISION_XML = "BoomOnCollision.xml";
         const float ROTATION = 0.0f;
         const float ROTATION_SPEED = 0.0f;
 
@@ -42,9 +42,9 @@ namespace CrashNet.ParticleSystem.Weapons
             new Vector2(ACCELERATION_X, ACCELERATION_Y),
             new Vector2(ACCELERATION_X, ACCELERATION_Y),
             Texture,
-            DIR + ONFIREXML,
-            DIR + INFLIGHTXML,
-            DIR + ONCOLLISIONXML,
+            DIR + ON_FIRE_XML,
+            DIR + IN_FLIGHT_XML,
+            DIR + ON_COLLISION_XML,
             ROTATION,
             ROTATION_SPEED,
             1.0,

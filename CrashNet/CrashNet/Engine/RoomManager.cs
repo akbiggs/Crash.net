@@ -12,8 +12,8 @@ namespace CrashNet.Engine
 
         static List<string> names = new List<string>
         {
-            "partitioned.csv",
-            "smiley.csv"
+            "Partitioned.csv",
+            "Smiley.csv"
         };
     }
 }

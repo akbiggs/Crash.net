@@ -8,8 +8,14 @@ namespace CrashNet.GRNG
 {
     public class GRandom
     {
+        /// <summary>
+        /// The random generator behind this random generator.
+        /// </summary>
         Random random;
 
+        /// <summary>
+        /// Make a new random generator.
+        /// </summary>
         public GRandom()
         {
             random = new Random();
@@ -20,9 +26,13 @@ namespace CrashNet.GRNG
             return random.Next(min, max);
         }
 
-        /** 
-         * Returns a random double from specified distribution.
-         **/
+        /// <summary>
+        /// Return a random double from the specified distribution.
+        /// </summary>
+        /// <param name="type">The type of distribution.</param>
+        /// <param name="alpha"></param>
+        /// <param name="beta"></param>
+        /// <returns>A random double.</returns>
         public double GetRandomDouble(Distribution type, double alpha, double beta)
         {
             if (type == Distribution.Uniform)

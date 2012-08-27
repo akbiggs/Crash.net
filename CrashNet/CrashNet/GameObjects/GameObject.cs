@@ -95,43 +95,40 @@ namespace CrashNet.GameObjects
         /// <param name="room">The room in which the object is moving around.</param>
         internal virtual void Move(Direction direction, GameTime gameTime, Room room)
         {
-            float xComponent, yComponent;
-            if (direction == Direction.None)
-                xComponent = yComponent = 0;
-            else
-            {
-                float angle = (float)DirectionOperations.ToRadians(direction);
-                RotateTo(angle);
+            Vector2 velocityChange = GetXYComponents(direction, acceleration.X * gameTime.ElapsedGameTime.Milliseconds, 
+                acceleration.Y * gameTime.ElapsedGameTime.Milliseconds);
 
-                // There's this arithmetic bug where sin and cos produce very small values during movements along
-                // the opposite axes, so round them.
-                xComponent = (float)(acceleration.X * gameTime.ElapsedGameTime.Milliseconds * Math.Round(Math.Sin(angle), 6));
-                // up is negative, down is positive, so multiply by -1. 
-                yComponent = (float)(-1 * acceleration.Y * gameTime.ElapsedGameTime.Milliseconds * Math.Round(Math.Cos(angle), 6));
-
-            }
-            ChangeVelocity(new Vector2(xComponent, yComponent));
+            if (velocityChange != Vector2.Zero)
+                RotateTo((float)DirectionOperations.ToRadians(direction));
+            ChangeVelocity(velocityChange);
             Move(room);
-                
         }
 
-        /**
-         * Returns x,y component vector from the specified direction and speed.
-         * NOTE: Can use this Move() method above.
-         **/
-        internal Vector2 GetXYComponents(Direction dir, float magnitudex, float magnitudey)
+        /// <summary>
+        /// Get the (x, y)-vector corresponding to the given direction
+        /// transformed by the given magnitudes.
+        /// </summary>
+        /// <param name="direction">The direction to transform.</param>
+        /// <param name="magnitudeX">The magnitude of the direction's x-transformation.</param>
+        /// <param name="magnitudeY">The magnitude of the direction's y-transformation.</param>
+        /// <returns>The direction transformed by the x and y-magnitudes.</returns>
+        internal Vector2 GetXYComponents(Direction direction, float magnitudeX, float magnitudeY)
         {
+            if (direction == Direction.None)
+                return Vector2.Zero;
+            
             float x, y, theta;
-            theta = (float)DirectionOperations.ToRadians(dir);
+            theta = (float)DirectionOperations.ToRadians(direction);
 
-            x = (float)(magnitudex * Math.Round(Math.Sin(theta), 6));
-            y = (float)(-1 * magnitudey * Math.Round(Math.Cos(theta), 6));
+            x = (float)(magnitudeX * Math.Round(Math.Sin(theta), 6));
+            y = (float)(-1 * magnitudeY * Math.Round(Math.Cos(theta), 6));
             return new Vector2(x, y);
         }
 
-        /**
-         * Moves GameObject based on its current velocity.
-         **/ 
+        /// <summary>
+        /// Moves GameObject based on its current velocity.
+        /// </summary>
+        /// <param name="room">The room in which the object is located.</param>
         internal virtual void Move(Room room)
         {
             if (Velocity.X != 0)
@@ -352,8 +349,6 @@ namespace CrashNet.GameObjects
                 if (BBox != null) BBox.Position = value;
             }
         }
-
-        
 
         /// <summary>
         /// The texture of the object.

@@ -33,6 +33,28 @@ namespace CrashNet.ParticleSystem
 
         private bool HasCollided = false;
 
+        /// <summary>
+        /// Creates a new projectile.
+        /// </summary>
+        /// <param name="owner">The object that fired the projectile.</param>
+        /// <param name="position">The initial position of the projectile.</param>
+        /// <param name="origin">The origin point of the projectile.</param>
+        /// <param name="initialVelocity">The initial velocity of the projectile.</param>
+        /// <param name="maxSpeed">The maximum speed of the projectile.</param>
+        /// <param name="acceleration">The acceleration of the projectile.</param>
+        /// <param name="deceleration">The deccceleration of the projectile.</param>
+        /// <param name="texture">The texture of the projectile.</param>
+        /// <param name="OnFireFX_XML">The relative path to the XML file from which the 
+        /// effects for firing a projectile are loaded.</param>
+        /// <param name="InFlightFX_XML">The relative path to the XML file from which the
+        /// effects used for an in-flight particle are loaded.</param>
+        /// <param name="OnCollisionFX_XML">The relative path to the XML file from which the
+        /// effects used for a projectile that has collided with a surface are loaded.</param>
+        /// <param name="rotation">The initial rotation of the projectile.</param>
+        /// <param name="rotationVelocity">The speed at which the projectile spins.
+        /// Negative for counter-clockwise, positive for clockwise, 0 for no spinning.</param>
+        /// <param name="particleLevel"></param>
+        /// <param name="particleScaling"></param>
         public Projectile(
             GameObject owner,
             Vector2 position,
@@ -42,36 +64,35 @@ namespace CrashNet.ParticleSystem
             Vector2 acceleration,
             Vector2 deceleration,
             Texture2D texture,
-            /**CrashNet.Engine.Game parent,**/ 
-            String XMLFile1, // OnFireFXEmitter xml file
-            String XMLFile2, // InFlightFXEmitter xml file
-            String XMLFile3, // OnCollisionFXEmitter xml file
+            String OnFireFX_XML,
+            String InFlightFX_XML,
+            String OnCollisionFX_XML,
             float rotation,  //TODO: Create global default values for rotation, 
-            float rotationSpeed, // rotationSpeed and particleLevel (possible from GameObject constants)
+            float rotationVelocity, // rotationSpeed and particleLevel (possible from GameObject constants)
             double particleLevel = 1.0,
             double particleScaling = 1.0) 
-            : base(position, origin, initialVelocity, maxSpeed, acceleration, deceleration, texture, rotation, rotationSpeed)
+            : base(position, origin, initialVelocity, maxSpeed, acceleration, deceleration, texture, rotation, rotationVelocity)
         {
             this.owner = owner;
-            OnFireFXEmitter = new XNAEmitter(/**parent,**/ position, XMLFile1, particleLevel, particleScaling);
-            InFlightFXEmitter = new XNAEmitter(/**parent,**/ position, XMLFile2, particleLevel, particleScaling);
-            OnCollisionFXEmitter = new XNAEmitter(/**parent,**/ position, XMLFile3, particleLevel, particleScaling);
+            OnFireFXEmitter = new XNAEmitter(/**parent,**/ position, OnFireFX_XML, particleLevel, particleScaling);
+            InFlightFXEmitter = new XNAEmitter(/**parent,**/ position, InFlightFX_XML, particleLevel, particleScaling);
+            OnCollisionFXEmitter = new XNAEmitter(/**parent,**/ position, OnCollisionFX_XML, particleLevel, particleScaling);
         }
 
-        /**
-         * Used when projectile is first fired to trigger
-         * special effects.
-         **/
+        /// <summary>
+        /// Callback for projectile fired event.
+        /// Triggers special in-flight effects.
+        /// </summary>
         internal void OnFire()
         {
             OnFireFXEmitter.Start();
             InFlightFXEmitter.Start();
         }
 
-        /**
-         * Triggers special effects when projectile
-         * collides with another gameObject.
-         **/
+        /// <summary>
+        /// Callback for collision event.
+        /// Triggers special collision effects.
+        /// </summary>
         internal void OnCollision()
         {
             HasCollided = true;
@@ -88,23 +109,17 @@ namespace CrashNet.ParticleSystem
                 );
         }
 
-        /**
-         * Update override.
-         **/
         internal override void Update(GameTime gameTime, Room room)
         {
+            // remove if expired
             if (!IsAlive())
                 room.RemoveAfterUpdate(this);
-            /**
-             * Move the projectile:
-             **/
+            
+            // move the projectile
             if (!HasCollided)
                 Move(room);
          
-            /**
-             * Update the special effects:
-             **/
-            
+            // update the special effects            
             OnFireFXEmitter.Update(gameTime.ElapsedGameTime.Milliseconds);
             InFlightFXEmitter.SetLocation(Position);
             InFlightFXEmitter.Update(gameTime.ElapsedGameTime.Milliseconds);

@@ -5,11 +5,11 @@ Content\Textures\player_one.xnb
 Content\Textures\player_two.xnb
 Content\Textures\wall.xnb
 Content\Textures\background.xnb
-Content\Fonts\main_menu_font.xnb
 Content\Textures\boom_bullet.xnb
 Content\Textures\fire.xnb
 Content\Textures\smoke.xnb
 Content\Textures\square_particle.xnb
+Content\Fonts\main_menu_font.xnb
 Content\EffectsXMLs\BoomInFlight.xml
 Content\EffectsXMLs\BoomOnFire.xml
 Content\EffectsXMLs\BoomOnCollision.xml

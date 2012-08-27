@@ -95,7 +95,7 @@ namespace CrashNet.Worlds
             this.objects = new List<GameObject>();
             this.addedObjects = new List<GameObject>();
             this.removedObjects = new List<GameObject>();
-            InitializeLeavingObjects();
+            ClearLeavingObjects();
             
             tiles = new Tile[Width, Height];
             for (int col = 0; col < Width; col++)
@@ -116,7 +116,7 @@ namespace CrashNet.Worlds
         /// <summary>
         /// Initializes the list of objects wanting to leave the room.
         /// </summary>
-        private void InitializeLeavingObjects()
+        private void ClearLeavingObjects()
         {
             this.wantingToLeave = new Dictionary<Direction, List<GameObject>>();
             foreach (Direction direction in Enum.GetValues(typeof(Direction)))
@@ -243,7 +243,6 @@ namespace CrashNet.Worlds
                  **/
                 if (objects[i].IsAlive())
                 {
-                    // update and keep in boundaries of stage
                     objects[i].Update(gameTime, this);
                     KeepInBounds(objects[i]);
 
@@ -267,34 +266,14 @@ namespace CrashNet.Worlds
                         if (objects[i] != other && objects[i].ShouldCollide(other, out region))
                             objects[i].Collide(other, region);
                     }
-                    /**
-                     * Collide with walls in the room
-                     **/
-                    /**
-                     * Possibly unnecessary since collision detection with
-                     * walls is handled in GameObject's ChangeY/XPosition
-                     * method.
-                     *
-                    foreach (Tile tile in tiles)
-                    {
-                        BBox region;
-                        if ((objects[i] != tile) && tile.GetTileType() == TileType.Wall)
-                        {
-                            if (objects[i].ShouldCollide(tile, out region))
-                                objects[i].Collide(tile, region);
-                        }
-                    }**/
                 }
                 else // If object is not alive:
                 {
-                    // Add object to remove queue.
-                    removedObjects.Add(objects[i]);
+                    RemoveAfterUpdate(objects[i]);
                 }
             }
 
-            /**
-             * Add queued objects to room object list.
-             **/
+            // add all objects queued to be added
             foreach (GameObject obj in addedObjects)
             {
                 objects.Add(obj);
@@ -302,15 +281,29 @@ namespace CrashNet.Worlds
             // Clear queued objects:
             addedObjects.Clear();
 
-            /**
-             * Removed remove-queued objects.
-             **/
+            // remove all objects queued to be removed
             foreach (GameObject obj in removedObjects)
             {
                 objects.Remove(obj);
             }
             // Clear queued objects:
             removedObjects.Clear();
+        }
+
+        internal void Draw(SpriteBatch spriteBatch)
+        {
+            if (ShouldRender())
+                Render(spriteBatch.GraphicsDevice);
+
+            spriteBatch.Draw(texture, new Vector2(0, 0), Color.White);
+
+            foreach (GameObject obj in objects)
+                obj.Draw(spriteBatch);
+
+            if (editMode)
+                spriteBatch.DrawString(FontManager.GetFont(FontNames.MAIN_MENU_FONT),
+                    "EDIT MODE", new Vector2((Width - 4) * TILESIZE, (Height - 1) * TILESIZE),
+                    Color.White);
         }
 
         /// <summary>
@@ -347,22 +340,6 @@ namespace CrashNet.Worlds
             while (Directory.EnumerateFiles(saveDir).Contains(nextName))
                 nextName = String.Concat("Room", nextName);
             return nextName;
-        }
-
-        internal void Draw(SpriteBatch spriteBatch)
-        {
-            if (ShouldRender()) 
-                Render(spriteBatch.GraphicsDevice);
-
-            spriteBatch.Draw(texture, new Vector2(0, 0), Color.White);
-
-            foreach (GameObject obj in objects)
-                obj.Draw(spriteBatch);
-
-            if (editMode)
-                spriteBatch.DrawString(FontManager.GetFont(FontNames.MAIN_MENU_FONT),
-                    "EDIT MODE", new Vector2((Width - 4) * TILESIZE, (Height - 1) * TILESIZE),
-                    Color.White);
         }
 
         /// <summary>
@@ -415,7 +392,7 @@ namespace CrashNet.Worlds
         /// </summary>
         public void Leave()
         {
-            InitializeLeavingObjects();
+            ClearLeavingObjects();
             RemovePlayers();
         }
 
@@ -430,23 +407,56 @@ namespace CrashNet.Worlds
         }
 
         /// <summary>
-        /// Adds given object to addedObjects queue.
-        /// AddedObjects get added to room after
-        /// the current update cycle.
+        /// Adds given object to the room after the update has finished.
+        /// Safer than Add to call during an update.
         /// </summary>
         public void AddAfterUpdate(GameObject obj)
         {
             addedObjects.Add(obj);
         }
 
+        /// <summary>
+        /// Removes the given object from the room.
+        /// </summary>
+        /// <param name="obj">The object to be removed from the room.</param>
         public void Remove(GameObject obj)
         {
             objects.Remove(obj);
         }
 
+        /// <summary>
+        /// Removes the given object from the room after the update has finished.
+        /// Safer than Remove to call during an update.
+        /// </summary>
+        /// <param name="obj">The object to be removed.</param>
         public void RemoveAfterUpdate(GameObject obj)
         {
             removedObjects.Add(obj);
+        }
+
+        /// <summary>
+        /// Return whether or not the given object is out of bounds.
+        /// </summary>
+        /// <param name="obj">The object to check.</param>
+        /// <param name="violationDirection">The direction in which the object is out of bounds,
+        /// or Direction.None if the object is not out of bounds.</param>
+        /// <returns>True if the object is out of bounds, false otherwise.</returns>
+        public bool OutOfBounds(GameObject obj, out Direction violationDirection)
+        {
+            violationDirection = Direction.None;
+
+            // get the direction in which the object is out of bounds, if any at all
+            // priority: West > North > East > South
+            if (obj.Position.X < 0)
+                violationDirection = Direction.West;
+            else if (obj.Position.Y < 0)
+                violationDirection = Direction.North;
+            else if (obj.Position.X + obj.BBox.Width >= GetWidthInPixels())
+                violationDirection = Direction.East;
+            else if (obj.Position.Y + obj.BBox.Height >= GetHeightInPixels())
+                violationDirection = Direction.South;
+
+            return violationDirection == Direction.None;
         }
 
         /// <summary>
