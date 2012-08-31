@@ -314,6 +314,17 @@ namespace CrashNet.GameObjects
         }
 
         /// <summary>
+        /// Resolves the collision in a region between this object
+        /// and another.
+        /// </summary>
+        /// <param name="other">The other object being collided with.</param>
+        /// <param name="region">The region of collision.</param>
+        public virtual void Collide(GameObject other, BBox region)
+        {
+
+        }
+
+        /// <summary>
         /// Used during room update method to determine
         /// if this GameObject should be removed from
         /// room's GameObject list.
@@ -325,16 +336,6 @@ namespace CrashNet.GameObjects
         internal virtual bool IsAlive()
         {
             return true;
-        }
-
-        /// <summary>
-        /// Resolves the collision in a region between this object
-        /// and another.
-        /// </summary>
-        /// <param name="other">The other object being collided with.</param>
-        /// <param name="region">The region of collision.</param>
-        public virtual void Collide(GameObject other, BBox region) {
-
         }
 
         /// <summary>

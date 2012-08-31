@@ -465,8 +465,18 @@ namespace CrashNet.Worlds
         /// <param name="obj">The object to keep in bounds.</param>
         public void KeepInBounds(GameObject obj)
         {
+            // if the object went outside the boundaries of the room, collide it with a wall and push
+            // it back in.
+            Vector2 oldPosition = obj.Position;
             obj.Position = Vector2.Clamp(obj.Position, Vector2.Zero,
                 new Vector2(GetWidthInPixels() - obj.BBox.Width - 1, GetHeightInPixels() - obj.BBox.Height - 1));
+            if (oldPosition != obj.Position) 
+            {
+                // TODO: properly create a region of collision corresponding to the amount of the exit overlapped
+                Vector2 change = new Vector2(Math.Abs(oldPosition.X - obj.Position.X),
+                    Math.Abs(oldPosition.Y - obj.Position.Y));
+                obj.Collide(new Tile(TileType.Wall), new BBox(oldPosition, (int)change.X, (int)change.Y));
+            }
         }
 
         /// <summary>
