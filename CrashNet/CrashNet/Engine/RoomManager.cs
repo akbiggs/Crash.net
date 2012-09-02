@@ -6,14 +6,13 @@ using CrashNet.Worlds;
 
 namespace CrashNet.Engine
 {
-    public static class RoomManager
+    static class RoomManager
     {
         static Dictionary<string, Tile[,]> tileMapDict = new Dictionary<string, Tile[,]>();
+    }
 
-        static List<string> names = new List<string>
-        {
-            "Partitioned.csv",
-            "Smiley.csv"
-        };
+    static class RoomNames
+    {
+        
     }
 }

@@ -33,7 +33,7 @@ namespace CrashNet.Worlds
         /// <summary>
         /// The folder for rooms to be saved in.
         /// </summary>
-        const string ROOM_FOLDER = "\\..\\..\\..\\Worlds\\Rooms\\";
+        const string ROOM_FOLDER = "..\\..\\..\\Worlds\\Rooms\\";
 
         /// <summary>
         /// The savename of the room file.
@@ -207,7 +207,8 @@ namespace CrashNet.Worlds
         internal virtual void Update(GameTime gameTime)
         {
             #region LEVEL EDITOR
-
+            
+#if DEBUG 
             if (Input.KeyboardTapped(Keys.F1))
                 Save();
 
@@ -230,6 +231,7 @@ namespace CrashNet.Worlds
                     SetTile((int)tileCoords.X, (int)tileCoords.Y, TileType.Ground);
                 }
             }
+#endif
             #endregion
 
             foreach (Tile tile in tiles)
@@ -311,12 +313,8 @@ namespace CrashNet.Worlds
         /// </summary>
         private void Save()
         {
-            // save under the appropriate name in the appropriate directory
-            string saveDir = Directory.GetCurrentDirectory() + ROOM_FOLDER;
-            string fileName = SAVE_NAME;
-
             // go through and write each tile to the comma-separated file
-            StreamWriter writer = new StreamWriter(saveDir + fileName);
+            StreamWriter writer = new StreamWriter(ROOM_FOLDER + SAVE_NAME);
             for (int y = 0; y < Height; y++)
             {
                 List<string> row = new List<string>();

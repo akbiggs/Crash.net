@@ -11,10 +11,14 @@ namespace CrashNet.GameObjects
 {
     class GameObject
     {
-        //how much the player should be kept away from any walls
+        /// <summary>
+        /// How much any object should be pushed away from any walls.
+        /// </summary>
         internal const float WALL_PADDING = 0.1f;
 
-        //used for calculating rotation angles
+        /// <summary>
+        /// Used for spinning the object around when it wants to.
+        /// </summary>
         internal const float DEFAULT_ROTATION_SPEED = (float)(Math.PI / 20);
         
         internal Vector2 position;

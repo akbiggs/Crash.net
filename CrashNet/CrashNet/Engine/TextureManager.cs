@@ -121,7 +121,9 @@ namespace CrashNet
         }
     }
 
-    //stores constants for texture names
+    /// <summary>
+    /// Stores constants for texture names.
+    /// </summary>
     static class TextureNames
     {
         public const string PLAYER_ONE_IDLE = "enemy";
